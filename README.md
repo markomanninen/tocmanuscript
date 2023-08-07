@@ -18,13 +18,13 @@ Whether you're working on a research paper, a novel, a technical manual, or any 
 
 Get started with ToCManuscript and transform the way you write!
 
-# START WIZARD
+## START WIZARD
 
-This step by step procedure will help user to generate manuscript content by using ChatGPT and Noteable plugin. This procedure will use custom classes, initialize them, ask TOC titles and prompts, generate content, and save the completed manuscript to the `.md` text file.
+This step-by-step procedure will help user to generate manuscript content by using ChatGPT and the Noteable plugin. This procedure will use custom classes, initialize them, ask TOC titles and prompts, generate content, and save the completed manuscript to the `.md` text file.
 
-All steps are stored to the notebook cells for running them independently at any time. The associated ChatGPT conversation can be shared to show how it was used to generate the manuscript.
+All steps are stored in the notebook cells for running them independently at any time. The associated ChatGPT conversation can be shared to show how it was used to generate the manuscript.
 
-Download module from github, if it is not available in th Noteable project, or if user wants to replace the file with appended option: `-O tocmanuscript.py`:
+Download the module from GitHub if it is not available in the Noteable project or if the user wants to replace the file with appended option: `-O tocmanuscript.py`:
 
 ```
 !wget https://raw.githubusercontent.com/markomanninen/tocmanuscript/main/tocmanuscript.py
@@ -51,9 +51,9 @@ author = Author("John Doe")
 toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
 ```
 
-# STEP 1
+## STEP 1
 
-User must give a table of contents (TOC) with optional descriptions in a hierarchical tree format:
+The user must give a table of contents (TOC) with optional descriptions in a hierarchical tree format:
 
 ```
 Heading 1 [Description]
@@ -63,9 +63,9 @@ Heading 1
 ...
 ```
 
-Ask user to provide TOC or help user to create one.
+Ask the user to provide TOC or help the user to create one.
 
-# STEP 2
+## STEP 2
 
 Set general guidelines for LLM prompts:
 
@@ -73,9 +73,9 @@ Set general guidelines for LLM prompts:
 guidelines={'Role': '', 'Style': '', 'Format': '', 'Context': '', ...}
 ```
 
-This can be used as a global system prompt for LLM. But it can be overriden at any spesific section prompt.
+This can be used as a global system prompt for LLM. But it can be overridden at any specific section prompt.
 
-# STEP 3 (iterative)
+## STEP 3 (iterative)
 
 a) Generate prompts for each section, one by one, to guide the future content creation in step 4:
 
@@ -92,23 +92,23 @@ section_1_prompt = Prompt(
 
 See more help: `print(Prompt.__init__.__doc__)`
 
-b) Create title and prompt entry for the section. Value must be `ToCDict` type:
+b) Create a title and prompt entry for the section. The value must be `ToCDict` type:
 
 ```
 toc_manuscript[1] = ToCDict({'title': 'Heading level one', prompt: section_1_prompt})
 ```
 
-You may initialize a group of sections, like one chapter in one cell, but possibly half a dozen sections at most, because the generated text will be limited by length. Proceeding with smaller tasks is best.
+You may initialize a group of sections, like one chapter in one cell, but possibly half a dozen sections at most because the generated text will be limited by length. Proceeding with smaller tasks is best.
 
 ```
 toc_manuscript[1][1] = ToCDict({'title': 'Heading level two', prompt: section_1_1_prompt})
 ```
 
-Repeat step 3. Ask user for permission to proceed to the next item(s).
+Repeat step 3. Ask the user for permission to proceed to the next item(s).
 
 After the step 3 final iteration, you can call `toc_manuscript.print_toc()` to see the intended table of contents in plain text format.
 
-# STEP 4 (iterative)
+## STEP 4 (iterative)
 
 Once all titles and prompts are set, let Noteable + ChatGPT generate a content cell for each item in TOC, one by one.
 
@@ -122,27 +122,27 @@ print(next_index, next_prompt)
 
 Wait for a user's permission to proceed to the next steps c) and d).
 
-c) Let LLM generate content to the variable:
+c) Let LLM generate content for the variable:
 
 ```
 content = "..."
 ```
 
-d) Set content and completition state (`True`|`False`), `True` means complete, `False` means draft:
+d) Set content and completion state (`True`|`False`), `True` means complete, `False` means draft:
 
 ```
 toc_manuscript.set_currently_editing_content(content, completed=True)
 ```
 
-Repeat step 4. Ask user for permission to proceed to the next item(s).
+Repeat step 4. Ask the user for permission to proceed to the next item(s).
 
-# STEP 5
+## STEP 5
 
 a) Use `toc_manuscript.check_complete()` to see the current state of completed sections.
 
 If content has been marked with `completed = False`, it will be denoted by (draft) mark in the heading and appended prompt information.
 
-b) Once all contents are set, store the generated content to the text directory and `.md` file:
+b) Once all contents are set, store the generated content in the text directory and `.md` file:
 
 ```
 toc_manuscript.generate()
