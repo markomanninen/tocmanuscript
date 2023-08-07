@@ -492,7 +492,7 @@ class ToCManuscript(ToCDict):
 
         def find_next_index(index, toc):
             """
-            Recursively find the index of the next available section in the TOC.
+            Recursively find the index of the next available depth-first section in the TOC.
 
             Args:
                 index (list): The current index in the TOC.
@@ -510,24 +510,23 @@ class ToCManuscript(ToCDict):
             """
             # If the current index is empty, return the index of the first key in the TOC
             if not index:
-                return [list(toc.keys())[0]]
+                for key, value in toc.items():
+                    if isinstance(key, int) and isinstance(value, ToCDict):
+                        return [key]
+                return []
 
             # Navigate to the current level in the TOC
             current_level = toc
-            for i in index[:-1]:
+            for i in index:
                 current_level = current_level[i]
 
-            # Get the keys at the current level and find the index of the next key
-            keys = list(current_level.keys())
-            current_key = index[-1]
-            next_key_index = keys.index(current_key) + 1
+            # Check for children at the current level
+            for key, value in current_level.items():
+                if isinstance(key, int) and isinstance(value, ToCDict):
+                    return index + [key]
 
-            # If the next key exists, return its index
-            if next_key_index < len(keys):
-                return index[:-1] + [keys[next_key_index]]
-            # If no next key exists, move up one level and repeat the process
-            else:
-                return find_next_index(index[:-1], toc)
+            # If no children are found, move up one level and repeat the process
+            return find_next_index(index[:-1], toc)
 
         # Find the next index and update the currently_editing_index
         next_index = find_next_index(self.currently_editing_index, self)
