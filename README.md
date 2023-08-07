@@ -55,11 +55,13 @@ toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
 
 User must give a table of contents (TOC) with optional descriptions in a hierarchical tree format:
 
+```
 Heading 1 [Description]
  - Heading 2
    - Heading 3
 Heading 1
 ...
+```
 
 Ask user to provide TOC or help user to create one.
 
