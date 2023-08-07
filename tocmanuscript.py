@@ -572,8 +572,8 @@ class ToCManuscript(ToCDict):
                      # Get the title and print with indentation
                     title = value.get('title', '')
                     print(f'{indent}- {title}')
-                # Recursive call for nested levels, increasing the indentation
-                _print_toc(value, level + 1)
+                    # Recursive call for nested levels, increasing the indentation
+                    _print_toc(value, level + 1)
 
         # Start the recursive printing from the root level
         _print_toc(self)
