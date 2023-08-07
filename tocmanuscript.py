@@ -508,25 +508,35 @@ class ToCManuscript(ToCDict):
                 - If no next section is found at any level: Starts from the beginning of the TOC.
 
             """
-            # If the current index is empty, return the index of the first key in the TOC
             if not index:
-                for key, value in toc.items():
-                    if isinstance(key, int) and isinstance(value, ToCDict):
+                for key in toc.keys():
+                    if isinstance(key, int):
                         return [key]
                 return []
 
-            # Navigate to the current level in the TOC
+            # Check for children at the current level
             current_level = toc
             for i in index:
                 current_level = current_level[i]
 
-            # Check for children at the current level
-            for key, value in current_level.items():
-                if isinstance(key, int) and isinstance(value, ToCDict):
+            for key in current_level.keys():
+                if isinstance(key, int):
                     return index + [key]
 
-            # If no children are found, move up one level and repeat the process
-            return find_next_index(index[:-1], toc)
+            # If no children are found, check for next sibling at parent level
+            parent_index = index[:-1]
+            parent_level = toc
+            for i in parent_index[:-1]:
+                parent_level = parent_level[i]
+
+            keys = list(parent_level.keys())
+            current_key_index = keys.index(parent_index[-1])
+            for key in keys[current_key_index + 1:]:
+                if isinstance(key, int):
+                    return parent_index[:-1] + [key]
+
+            # If no next sibling is found, move up one more level and repeat the process
+            return find_next_index(parent_index, toc)
 
         # Find the next index and update the currently_editing_index
         next_index = find_next_index(self.currently_editing_index, self)
