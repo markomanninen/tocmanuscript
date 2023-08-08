@@ -98,6 +98,8 @@ print(next_index, next_prompt)
 
 Wait for a user's permission to proceed to the next phases c) and d). It is important to stop at this phase and let LLM read the output of the last print. It will guide LLM to generate sophisticated content.
 
+If next_prompt is empty, it may indicate that the section has only title, no content generation intended.
+
 c) Let LLM generate content for the variable:
 
 content = "..."

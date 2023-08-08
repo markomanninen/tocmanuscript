@@ -140,6 +140,8 @@ print(next_index, next_prompt)
 
 Wait for a user's permission to proceed to the next phases c) and d). It is important to stop at this phase and let LLM read the output of the last print. It will guide LLM to generate sophisticated content.
 
+If next_prompt is empty, it may indicate that the section has only title, no content generation intended.
+
 c) Let LLM generate content for the variable:
 
 ```
@@ -246,7 +248,7 @@ class ToCManuscript(ToCDict):
         # Iterate 2-3
         # 2. Set index and get prompt
         # a) Determine index
-        toc_manuscript.currently_editing_index = [1]
+        toc_manuscript.move_to_next_section() or toc_manuscript.currently_editing_index = [1]
         # b) Get and output prompt to help LLM in content generation.
         print(toc_manuscript.get_currently_editing_prompt())
 
@@ -421,7 +423,10 @@ class ToCManuscript(ToCDict):
         nested_dict = self
         for idx in self.currently_editing_index:
             nested_dict = nested_dict[idx]
-        return nested_dict.get("prompt", "")
+        prompt = nested_dict.get("prompt", "")
+        if prompt == "":
+            print("Item '%s' may not need prompt for content generation. Move on to the next section." % nested_dict.get("title", ""))
+        return prompt
 
     def set_currently_editing_content(self, content, completed=False):
         """
