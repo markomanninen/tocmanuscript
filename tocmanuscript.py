@@ -26,27 +26,31 @@ This step-by-step procedure will help user to generate manuscript content by usi
 
 Steps are stored in the notebook cells for running them independently at any time. The associated ChatGPT conversation can be shared (for paid v4 users) to show how it was used to generate the manuscript.
 
-a) Download the module from GitHub if it is not available in the Noteable project or if the user wants to replace the file with appended option: `-O tocmanuscript.py`:
+STEP 1 (a-f)
+
+a) Create a new project and notebook, or use current ones.
+
+b) Download the module from GitHub if it is not available in the Noteable project or if the user wants to replace the file with appended option: `-O tocmanuscript.py`:
 
 ```
 !wget https://raw.githubusercontent.com/markomanninen/tocmanuscript/main/tocmanuscript.py
 ```
 
-b) Start a new Noteable notebook (or use a given one) to import classes:
+c) Import classes:
 
 ```
 from tocmanuscript import ToCDict, ToCManuscript, Prompt, Author, docs
 ```
 
-c) Read ToCManuscript, Prompt, Author, and ToCDict class documentation for later reference:
+d) Read ToCManuscript, Prompt, Author, and ToCDict class documentation for later reference:
 
 ```
 docs(ToCManuscript, Author)
 ```
 
-d) Ask manuscript title and author information from the user.
+e) Ask manuscript title and author information from the user.
 
-e) Init author and toc_manuscript instances with the given information:
+f) Init author and toc_manuscript instances with the given information:
 
 ```
 author = Author("John Doe")
@@ -54,7 +58,7 @@ toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
 ```
 
 
-## STEP 1
+## STEP 2
 
 The user must give a table of contents (TOC) with optional descriptions in a hierarchical tree format:
 
@@ -71,23 +75,23 @@ Ask the user to provide TOC or help the user to create one.
 Store toc as string in a variable so that we can refer to it at any time in the future: `toc_text = '...'`
 
 
-## STEP 2
+## STEP 3 (a-b)
 
-a) Read prompt class documentation to guide throught this step: `docs(Prompt)`
+a) Read prompt class documentation to guide through this step: `docs(Prompt)`
 
 b) Set general guidelines for LLM prompts:
 
 ```
 guidelines={'Role': '', 'Style': '', 'Format': '', 'Context': '', ...}
-restrictions={'Content': 'emit main heading in the beginning and conclusive part at the end of the text'}
+restrictions={'Content': 'Emit main heading/title in the beginning; Emit the conclusive part at the end of the text; Exclude slang or colloquial language; Do not consume topics and content from the future chapters and sections; Avoid fragmented structures with lots of subtitles', ...}
 ```
 
 These can be used kind of a global system prompt for LLM. But they can be overridden at any specific section prompt.
 
 
-## STEP 3 (iterative)
+## STEP 4 (a-b, iterative)
 
-These definitions will guide the future content creation in step 4.
+These definitions will guide the future content creation in step 5.
 
 a) Generate prompts for each section:
 
@@ -120,12 +124,11 @@ toc_manuscript[1][1] = ToCDict({'title': 'Heading level two', 'prompt': section_
 toc_manuscript[2] = ToCDict({'title': 'Only heading level one', 'completed'=True})
 ```
 
-Repeat STEP 3.
+Repeat STEP 4.
 
+## STEP 5 (a-b, c-d, iterative)
 
-## STEP 4 (iterative)
-
-After the the last item in STEP 3 iteration, you can call `toc_manuscript.print_toc()` to see the intended table of contents in plain text format.
+After the the last item in STEP 4 iteration, you can call `toc_manuscript.print_toc()` to see the intended table of contents in plain text format.
 
 Once all titles and prompts are set, let Noteable + ChatGPT generate a content cell for each item in TOC, one by one.
 
@@ -154,19 +157,19 @@ d) Set content and completion state (`True`|`False`), `True` means complete, `Fa
 toc_manuscript.set_currently_editing_content(content, completed=bool)
 ```
 
-Repeat STEP 4. Ask the user for permission to proceed to the next item(s).
+Repeat STEP 5. Ask the user for permission to proceed to the next item(s).
 
 
-## STEP 5
+## STEP 6 (a-b)
 
 a) Use `toc_manuscript.check_complete()` to see the current state of completed sections.
 
 If content has been marked with `completed = False`, it will be denoted by (draft) mark in the heading and appended prompt information.
 
-b) Once all contents are set, store the generated content in the text directory and `.md` file:
+b) Once all contents are set, store the generated content in the text directory to the `.md` file:
 
 ```
-toc_manuscript.generate()
+manuscript_content = toc_manuscript.generate()
 ```
 
 """
@@ -248,7 +251,7 @@ class ToCManuscript(ToCDict):
         # Iterate 2-3
         # 2. Set index and get prompt
         # a) Determine index
-        toc_manuscript.move_to_next_section() or toc_manuscript.currently_editing_index = [1]
+        toc_manuscript.currently_editing_index = [1]
         # b) Get and output prompt to help LLM in content generation.
         print(toc_manuscript.get_currently_editing_prompt())
 
@@ -307,6 +310,13 @@ class ToCManuscript(ToCDict):
         self.modified = datetime.now()
         self.completed = False
         self.currently_editing_index = []
+        self.output_dir = 'text_output'
+
+    def get_filepath(self):
+        if not self.title:
+            print("Manuscript title is missing!")
+            return ''
+        return os.path.join(self.output_dir, f'{self.title}.md')
 
     def generate(self):
         """
@@ -337,9 +347,12 @@ class ToCManuscript(ToCDict):
             [Content Section]
         """
         output_dir = 'text_output'
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        with open(os.path.join(output_dir, f'{self.title}.md'), 'w') as file:
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        filepath = self.get_filepath()
+        if not filepath:
+            return ''
+        with open(filepath, 'w') as file:
             title = self.title
             if self.subtitle:
                 title = f'{title}: {self.subtitle}'
@@ -359,6 +372,8 @@ class ToCManuscript(ToCDict):
                 file.write(f'{key}: {value}\n')
             file.write('\n')
             self._write_content(file, self)
+        with open(filepath, 'r') as file:
+            return file.read()
 
     def _write_content(self, file, content_dict, level_str=''):
         """
