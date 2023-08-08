@@ -43,12 +43,12 @@ Store toc as string in a variable so that we can refer to it at any time in the 
 
 STEP 3 (a-b)
 
-a) Read prompt class documentation to guide throught this step: docs(Prompt)
+a) Read prompt class documentation to guide through this step: docs(Prompt)
 
 b) Set general guidelines for LLM prompts:
 
 guidelines={'Role': '', 'Style': '', 'Format': '', 'Context': '', ...}
-restrictions={'Content': 'emit main heading in the beginning and conclusive part at the end of the text'}
+restrictions={'Content': 'Emit main heading/title in the beginning; Emit the conclusive part at the end of the text; Exclude slang or colloquial language; Do not consume topics and content from the future chapters and sections; Avoid fragmented structures with lots of subtitles', ...}
 
 These can be used kind of a global system prompt for LLM. But they can be overridden at any specific section prompt.
 
@@ -85,7 +85,7 @@ Repeat STEP 4.
 
 STEP 5 (a-b, c-d, iterative)
 
-After the the last item in STEP 3 iteration, you can call toc_manuscript.print_toc() to see the intended table of contents in plain text format.
+After the the last item in STEP 4 iteration, you can call toc_manuscript.print_toc() to see the intended table of contents in plain text format.
 
 Once all titles and prompts are set, let Noteable + ChatGPT generate a content cell for each item in TOC, one by one.
 
@@ -110,12 +110,12 @@ toc_manuscript.set_currently_editing_content(content, completed=bool)
 
 Repeat STEP 5. Ask the user for permission to proceed to the next item(s).
 
-STEP 6
+STEP 6 (a-b)
 
 a) Use toc_manuscript.check_complete() to see the current state of completed sections.
 
 If content has been marked with completed = False, it will be denoted by (draft) mark in the heading and appended prompt information.
 
-b) Once all contents are set, store the generated content in the text directory and .md file:
+b) Once all contents are set, store the generated content in the text directory to the `.md` file:
 
-toc_manuscript.generate()
+manuscript_content = toc_manuscript.generate()
