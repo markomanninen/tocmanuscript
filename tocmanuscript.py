@@ -363,13 +363,13 @@ class ToCManuscript(ToCDict):
                     file.write(f'Name: {self.author["name"]}\n')
                 for key, value in self.author.items():
                     if key != "name":
-                        file.write(f'{key}: {value}\n')
+                        file.write(f'{key.capitalize()}: {value}\n')
             if self.publication_args:
                 if self.author:
                     file.write('\n')
                 file.write('Publication\n\n')
             for key, value in self.publication_args.items():
-                file.write(f'{key}: {value}\n')
+                file.write(f'{key.capitalize()}: {value}\n')
             file.write('\n')
             self._write_content(file, self)
         with open(filepath, 'r') as file:
@@ -392,9 +392,11 @@ class ToCManuscript(ToCDict):
                 }
             The output will be:
                 # 1. Introduction
+
                 This is the intro
 
                 # 2. Chapter 1
+
                 Chapter 1 content
                 ...
 
@@ -419,7 +421,7 @@ class ToCManuscript(ToCDict):
             next_level_str = level_str + str(key) + '.'
 
             # Write the heading using the corresponding number of "#" symbols
-            file.write(f'%s {next_level_str} {title}{draft}\n' % ("#" * next_level_str.count(".")))
+            file.write(f'%s {next_level_str} {title}{draft}\n\n' % ("#" * next_level_str.count(".")))
             file.write(f'{content}\n')
 
             # Include additional information if the section is incomplete
