@@ -231,7 +231,7 @@ class ToCManuscript(ToCDict):
 
     Example:
         # Initialize
-        author = Author(name="Jon Doe")
+        author = Author(name="John Doe")
         toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
 
         # 1. Set titles and prompts (iterative)
@@ -294,7 +294,7 @@ class ToCManuscript(ToCDict):
             - currently_editing_index (list): A list of indices representing the currently editing sections or parts.
 
         Example:
-            author = Author(name = "Jon Doe")
+            author = Author(name = "John Doe")
             toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
         """
         self.title = title
@@ -552,20 +552,20 @@ class ToCManuscript(ToCDict):
                 if isinstance(key, int):
                     return index + [key]
 
-            # If no children are found, check for next sibling at parent level
-            parent_index = index[:-1]
-            parent_level = toc
-            for i in parent_index[:-1]:
-                parent_level = parent_level[i]
+            # If no children are found, try to find the next sibling section at the same level or above
+            for level in range(len(index) - 1, -1, -1):
+                current_level = toc
+                for i in index[:level]:
+                    current_level = current_level[i]
 
-            keys = list(parent_level.keys())
-            current_key_index = keys.index(parent_index[-1])
-            for key in keys[current_key_index + 1:]:
-                if isinstance(key, int):
-                    return parent_index[:-1] + [key]
+                keys = list(current_level.keys())
+                current_key_index = keys.index(index[level])
+                for key in keys[current_key_index + 1:]:
+                    if isinstance(key, int):
+                        return index[:level] + [key]
 
-            # If no next sibling is found, move up one more level and repeat the process
-            return find_next_index(parent_index, toc)
+            # If no next section is found at any level, start from the beginning of the TOC
+            return find_next_index([], toc)
 
         # Find the next index and update the currently_editing_index
         next_index = find_next_index(self.currently_editing_index, self)
