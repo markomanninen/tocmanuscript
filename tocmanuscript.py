@@ -83,7 +83,7 @@ b) Set general guidelines for LLM prompts:
 
 ```
 guidelines={'Role': '', 'Style': '', 'Format': '', 'Context': '', ...}
-restrictions={'Content': 'Emit main heading/title in the beginning; Emit the conclusive part at the end of the text; Exclude slang or colloquial language; Do not consume topics and content from the future chapters and sections; Avoid fragmented structures with lots of subtitles', ...}
+constraints={'Content': 'Emit main heading/title in the beginning; Emit the conclusive part at the end of the text; Exclude slang or colloquial language; Do not consume topics and content from the future chapters and sections; Avoid fragmented structures with lots of subtitles', ...}
 ```
 
 These can be used kind of a global system prompt for LLM. But they can be overridden at any specific section prompt.
@@ -102,7 +102,7 @@ section_1_prompt = Prompt(
     # Use general guidelines or extend it
     guidelines=guidelines,
     # Restrictive definitions for prompt
-    restrictions=restrictions
+    constraints=constraints
 )
 ```
 
@@ -724,8 +724,8 @@ class Prompt:
             'Format': 'Essay',
             'Audience Awareness': 'Academic readers'
         }
-        restrictions = {
-            'Length Constraints': '1000 words',
+        constraints = {
+            'Length Constraints': '1000 words',Restrictions
             'Content Restrictions': 'Exclude slang or colloquial language'
         }
 
@@ -733,7 +733,7 @@ class Prompt:
         section_1_prompt = Prompt(
             directives={'Instruction': 'Write an introduction to the topic of artificial intelligence.'},
             guidelines=guidelines,
-            constraints=restrictions
+            constraints=constraints
         )
 
     See more: print(Prompt.__init__.__doc__)
