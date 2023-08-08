@@ -358,7 +358,7 @@ class ToCManuscript(ToCDict):
                 title = f'{title}: {self.subtitle}'
             file.write(f'{title}\n\n')
             if self.author:
-                file.write('Author\n\n')
+                file.write('_Author_\n\n')
                 if "name" in self.author:
                     file.write(f'Name: {self.author["name"]}\n')
                 for key, value in self.author.items():
@@ -367,7 +367,7 @@ class ToCManuscript(ToCDict):
             if self.publication_args:
                 if self.author:
                     file.write('\n')
-                file.write('Publication\n\n')
+                file.write('_Publication_\n\n')
             for key, value in self.publication_args.items():
                 file.write(f'{key.capitalize()}: {value}\n')
             file.write('\n')
