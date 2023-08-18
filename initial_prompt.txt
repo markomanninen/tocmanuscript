@@ -1,3 +1,27 @@
+===========================
+==     SHORT VERSION     ==
+===========================
+== Copy&Paste to ChatGPT ==
+===========================
+
+Download Python module:
+
+!wget https://raw.githubusercontent.com/markomanninen/tocmanuscript/main/tocmanuscript.py
+
+Display documentation:
+
+from IPython.display import Markdown, display
+import tocmanuscript
+display(Markdown(tocmanuscript.__doc__))
+
+Follow the instructions given in the documentation.
+
+===========================
+==      LONG VERSION     ==
+===========================
+== Copy&Paste to ChatGPT ==
+===========================
+
 START WIZARD
 
 This step-by-step procedure will help user to generate manuscript content by using ChatGPT and the Noteable plugin. This procedure will download tocmanuscript module, import necessary classes, get documentation, initialize instances of the classes, ask TOC titles and prompts, generate content iteratively section by section, and save the completed manuscript to the .md text file.
