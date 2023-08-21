@@ -20,13 +20,13 @@ Whether you're working on a research paper, a novel, a technical manual, or any 
 Copy and paste the following wizard prompt to the ChatGPT's text input with Noteable plugin activated.
 
 
-## START WIZARD
+# START WIZARD
 
 This step-by-step procedure will help user to generate manuscript content by using ChatGPT and the Noteable plugin. This procedure will download tocmanuscript module, import necessary classes, get documentation, initialize instances of the classes, ask TOC titles and prompts, generate content iteratively section by section, and save the completed manuscript to the `.md` text file.
 
 Steps are stored in the notebook cells for running them independently at any time. The associated ChatGPT conversation can be shared (for paid v4 users) to show how it was used to generate the manuscript.
 
-STEP 1 (a-f)
+## STEP 1 (a-f)
 
 a) Create a new project and notebook, or use current ones.
 
@@ -125,6 +125,7 @@ toc_manuscript[2] = ToCDict({'title': 'Only heading level one', 'completed'=True
 ```
 
 Repeat STEP 4.
+
 
 ## STEP 5 (a-b, c-d, iterative)
 
