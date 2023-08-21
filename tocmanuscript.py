@@ -128,7 +128,7 @@ Repeat STEP 4.
 
 ## STEP 5 (a-b, c-d, iterative)
 
-After the the last item in STEP 4 iteration, you can call `toc_manuscript.print_toc()` to see the intended table of contents in plain text format.
+After the last item in the STEP 4 iteration, you can call `toc_manuscript.print_toc()` to see the intended table of contents in plain text format.
 
 Once all titles and prompts are set, let Noteable + ChatGPT generate a content cell for each item in TOC, one by one.
 
@@ -141,9 +141,9 @@ next_prompt = toc_manuscript.get_currently_editing_prompt()
 print(next_index, next_prompt)
 ```
 
-Wait for a user's permission to proceed to the next phases c) and d). It is important to stop at this phase and let LLM read the output of the last print. It will guide LLM to generate sophisticated content.
+Wait for a user's permission to proceed to the next phases, c) and d). It is important to stop at this phase and let LLM read the output of the last print. It will guide LLM to generate sophisticated content.
 
-If `next_prompt` is empty, it may indicate that the section has only title, no content generation intended. Call `move_to_next_section()` again in that case to move to the next index.
+If `next_prompt` is empty, it may indicate that the section has only a title and no content generation intended. Call `move_to_next_section()` again in that case to move to the next index.
 
 c) Let LLM generate content for the variable:
 
@@ -151,7 +151,7 @@ c) Let LLM generate content for the variable:
 content = "..."
 ```
 
-d) Set content and completion state (`True`|`False`), `True` means complete, `False` means draft, which is the default value:
+d) Set content and completion state (`True`|`False`), `True` means complete, `False` means a draft, which is the default value:
 
 ```
 toc_manuscript.set_currently_editing_content(content, completed=bool)
@@ -195,7 +195,7 @@ class ToCDict(dict):
     Usage:
         a = ToCDict({})
         a[1] = ToCDict({'title': 'title 1'})
-        # This is the right way to setting new index / subsection.
+        # This is the right way to setting a new index/subsection.
         a[1][1] = ToCDict({'title': 'title 1.1'})
         # This is the wrong way. Title 2.1 is not going to reach __setitem__.
         a[2] = ToCDict({'title': 'title 2', 1: ToCDict({'title': 'title 2.1'})})
@@ -211,9 +211,9 @@ class ToCDict(dict):
             - 'modified': (Automatically set) The timestamp when the value was last modified.
             - 'created': (Automatically set if not provided) The timestamp when the value was created.
             - 'completed': (Automatically set to False if not provided) A flag indicating whether the task associated with the key is completed.
-                           If prompt has not been given, then title is printed without content and completed is automatically True.
+                           If a prompt has not been given, then the title is printed without content, and completed is automatically True.
 
-        :raises ValueError: If the value is not a dictionary, if 'prompt' is not a Prompt object, or if 'title' is not given.
+        :raises ValueError: If the value is not a dictionary, if 'prompt' is not a Prompt object, or 'title' is not given.
         """
         if type(value) == ToCDict:
             if 'prompt' in value and type(value['prompt']) != Prompt:
@@ -256,7 +256,7 @@ class ToCManuscript(ToCDict):
         print(toc_manuscript.get_currently_editing_prompt())
 
         # 3. Generate content
-        # c) Placeholder for LLM text generated content
+        # c) Placeholder for LLM text-generated content
         content = "..."
         # d) Set content with completed=True|False
         toc_manuscript.set_currently_editing_content(content, completed=True)
@@ -402,7 +402,7 @@ class ToCManuscript(ToCDict):
 
             Sections marked as incomplete will include an "Updated" timestamp and a "Prompt" if provided.
         """
-        # Sorting keys ensures that the sections are processed in the correct order
+        # Sorting keys ensure that the sections are processed in the correct order
         sorted_keys = sorted([k for k in content_dict.keys() if isinstance(k, int)])
 
         for key in sorted_keys:
@@ -538,7 +538,7 @@ class ToCManuscript(ToCDict):
             toc_manuscript.move_to_next_section()  # Returns the index of the next section
 
             This will traverse to the next index every time method is called. If you want to keep
-            more static index and know exactly what you want, use: self.currently_editing_index = [indices...]
+            a more static index and know exactly what you want, use: self.currently_editing_index = [indices...]
         """
 
         def find_next_index(index, toc):
@@ -550,13 +550,13 @@ class ToCManuscript(ToCDict):
                 toc (dict): The TOC structure.
 
             Returns:
-                next_index (list): The index of the next available section, or the first section if no next section is found.
+                next_index (list): The index of the next available section or the first section if no next section is found.
 
             Example Cases:
                 - Starting from an empty index: Returns the index of the first key in the TOC.
                 - Starting from a section: Returns the index of the next sibling section at the same level.
-                - If no sibling sections exist: Moves up one level and repeats the process.
-                - If no next section is found at any level: Starts from the beginning of the TOC.
+                - If no sibling sections exist: Move up one level and repeat the process.
+                - If no next section is found at any level: Start from the beginning of the TOC.
 
             """
             if not index:
@@ -621,7 +621,7 @@ class ToCManuscript(ToCDict):
 
             Behavior:
                 - Iterates through the keys and values of the TOC at the current level.
-                - If the value is a ToCDict instance, prints the title with appropriate indentation.
+                - If the value is a ToCDict instance, print the title with the appropriate indentation.
                 - Recursively calls itself for nested levels, increasing the indentation.
             """
             # Calculate the indentation based on the current level
@@ -689,13 +689,13 @@ class Prompt:
     """
     The Prompt class is designed to encapsulate directives, guidelines, and constraints for guiding a large language model's response. Consider the following writing tips:
 
-    1. Target Audience, 2. Message and Theme, 3. Purpose, 4. Style and Tone, 5. Structuring and Organization, 6. Main Characters/Concepts, 7. Evidence/Bakcground Research, and
+    1. Target Audience, 2. Message and Theme, 3. Purpose, 4. Style and Tone, 5. Structuring and Organization, 6. Main Characters/Concepts, 7. Evidence/Background Research, and
 
     8. Textual Devices and Language Usage:
 
         Fiction:
             Metaphors and Similes: Creating vivid imagery.
-            Dialogue: Revealing character personality.
+            Dialogue: Revealing the character's personality.
             Foreshadowing: Building suspense.
             Alliteration and Assonance: Enhancing rhythm.
             Point of View: Controlling narration.
@@ -710,22 +710,22 @@ class Prompt:
             Active vs. Passive Voice: Controlling focus.
             Transitional Phrases: Ensuring smooth flow.
 
-    Here's a summary of the Prompt class parameters that encapsulates all the user-given definitions:
+    Here's a summary of the Prompt class parameters that encapsulate all the user-given definitions:
 
     Directives: These are the core instructions that guide the model's response. They can include various subcategories like questions, statements, instructions, creative requests, analytical questions, hypothetical scenarios, debates, dialogues, step-by-step, and more.
 
     Guidelines: These shape the tone, structure, and context of the response. They can include aspects like role, style, format, context, audience awareness, cultural sensitivity, accessibility considerations, and multimodal instructions.
 
-    Constraints: These set limitations or boundaries for the response, including length constraints, content restrictions, time, ethical, language, accessibility, legal or regulatory, domain-specific, sensitivity, and multimodal constraints.
+    Constraints: These set limitations or boundaries for the response, including length constraints, content restrictions, time, ethics, language, accessibility, legal or regulatory, domain-specific, sensitivity, and multimodal constraints.
 
     Example:
         guidelines = {
             'Style': 'Formal',
             'Format': 'Essay',
-            'Audience Awareness': 'Academic readers'
+            'Audience Awareness': 'Academic Readers'
         }
         constraints = {
-            'Length Constraints': '1000 words',Restrictions
+            'Length Constraints': '1000 words',
             'Content Restrictions': 'Exclude slang or colloquial language'
         }
 
@@ -796,7 +796,7 @@ class Prompt:
             - Multimodal Constraints: Limitations related to non-textual elements, like images or audio.
             Example:
                 {
-                    'Length': '100 words',
+                    'Length Constraints': '100 words',
                     'Content Restrictions': 'Exclude diet, starving, heavy-weight lifting keywords',
                     ...
                 }
