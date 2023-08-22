@@ -515,12 +515,13 @@ class ToCManuscript(ToCDict):
         for key in sorted_keys:
             value = content_dict[key]
             title = value.get('title', '')
+            prompt = value.get('prompt', None)
             completed = value.get('completed', False)
 
             # Construct the current numbering for hierarchical headings
             next_level_str_list = level_str_list + [str(key)]
 
-            if not completed:
+            if not completed and prompt is not None:
                 level_str = '.'.join(next_level_str_list) + '.'
                 incomplete_sections.append({'level_str': level_str, 'title': title})
 
