@@ -170,3 +170,7 @@ If content has been marked with completed = False, it will be denoted by (draft)
 b) Once all contents are set, store the generated content in the text directory to the .md file:
 
 manuscript_content = toc_manuscript.generate()
+
+---
+
+Start with the first step!

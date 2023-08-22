@@ -189,3 +189,7 @@ b) Once all contents are set, store the generated content in the text directory 
 ```
 manuscript_content = toc_manuscript.generate()
 ```
+
+---
+
+Start with the first step!
