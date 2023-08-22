@@ -170,24 +170,29 @@ def parse_md(markdown_text):
     # Parse the Markdown to create Notion blocks
     return parse_markdown_to_notion_blocks(markdown_text)
 
-def create_notion_page_from_md(markdown_text, title, parent_page_id):
-
+def create_notion_page_from_md(markdown_text, title, parent_page_id, cover_url = ''):
     # Create a new child page under the parent page with the given title
     created_page = notion.pages.create(parent={
         "type": "page_id",
         "page_id": parent_page_id
     }, properties={}, children=[])
 
+    cover = {}
+    if cover_url != "":
+		cover = {
+	        "external": {
+				# https://images.unsplash.com/photo-1507838153414-b4b713384a76?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=3600
+	            "url": cover_url
+	        }
+		}
     # Update the page with the title
-    notion.pages.update(created_page["id"], properties={
-        "title": {
-            "title": [{"type": "text", "text": {"content": title}}]
-        }
-    }, cover = {
-        "external": {
-            "url": "https://images.unsplash.com/photo-1507838153414-b4b713384a76?ixlib=rb-4.0.3&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=3600"
-        }
-    })
+    notion.pages.update(created_page["id"], properties=
+		{
+	        "title": {
+	            "title": [{"type": "text", "text": {"content": title}}]
+	        }
+	    }, cover = cover
+	)
 
     for block in parse_md(markdown_text):
         notion.blocks.children.append(
