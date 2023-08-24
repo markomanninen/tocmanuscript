@@ -236,20 +236,7 @@ class ToCDict(dict):
                 value['completed'] = True
         super().__setitem__(key, value)
 
-    def __getattr__(self, name):
-        return self[name]
-
-    def __setattr__(self, name, value):
-        self.__setitem__(name, value)
-
-class ToCDictPlain(ToCDict):
-    def __getattr__(self, name):
-        super().__getattr__(name)
-
-    def __setattr__(self, name, value):
-        super().__setattr__(name, value)
-
-class ToCManuscript(ToCDictPlain):
+class ToCManuscript(ToCDict):
     """
     The ToCManuscript class represents a manuscript with a table of contents, content sections, author information, and other publication-related properties. It provides methods for managing the manuscript's structure, content, and metadata, and for generating a Markdown file representing the manuscript.
 
