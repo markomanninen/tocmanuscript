@@ -237,6 +237,9 @@ class ToCDict(dict):
         super().__setitem__(key, value)
 
 class ToCManuscript(ToCDict):
+
+    _restoring = False  # Class-level attribute
+
     """
     The ToCManuscript class represents a manuscript with a table of contents, content sections, author information, and other publication-related properties. It provides methods for managing the manuscript's structure, content, and metadata, and for generating a Markdown file representing the manuscript.
 
@@ -316,14 +319,11 @@ class ToCManuscript(ToCDict):
         if self.title:
             filepath = os.path.join(self.output_dir, f'{self.title}.pkl')
             if os.path.exists(filepath):
+                ToCManuscript._restoring = True
                 with open(filepath, 'rb') as file:
                     saved_obj = pickle.load(file)
-                    # Update the superclass's dictionary with the saved object's dictionary
                     super(ToCManuscript, self).__dict__.update(saved_obj.__dict__)
-                    # Update the current object's attributes with those of the saved object
-                    #for key, value in saved_obj.__dict__.items():
-                        # Use setattr to update the attributes without invoking __setitem__
-                    #    setattr(self, key, value)
+                ToCManuscript._restoring = True
             else:
                 self.subtitle = subtitle
                 self.author = author
@@ -336,10 +336,6 @@ class ToCManuscript(ToCDict):
                 self.guidelines = {}
                 self.constraints = {}
 
-    def __reduce__(self):
-        # Return a tuple of class_name to call, arguments to pass to the constructor, and the object's state
-        return (self.__class__, (self.title,), self.__dict__)
-
     def __setitem__(self, key, value):
         """
         Sets the value for the specified key in the instance. If the value is of type 'ToCDict', the current state of the object is saved to a pickle file.
@@ -347,6 +343,10 @@ class ToCManuscript(ToCDict):
         :param key: The key for which the value is to be set.
         :param value: The value to be set for the specified key. If of type 'ToCDict', the object's state is saved.
         """
+
+        if ToCManuscript._restoring:
+            super().__setitem__(key, value)
+            return
 
         # Set global references if prompt properties are not given.
         if isinstance(value, ToCDict):
