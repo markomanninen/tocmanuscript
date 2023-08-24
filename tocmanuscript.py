@@ -238,7 +238,8 @@ class ToCDict(dict):
 
 class ToCManuscript(ToCDict):
 
-    _restoring = False  # Class-level attribute
+  	# Flag for objects restorage process.
+    _restoring = False
 
     """
     The ToCManuscript class represents a manuscript with a table of contents, content sections, author information, and other publication-related properties. It provides methods for managing the manuscript's structure, content, and metadata, and for generating a Markdown file representing the manuscript.
@@ -311,6 +312,8 @@ class ToCManuscript(ToCDict):
         Example:
             author = Author(name = "John Doe")
             toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
+            # Restore already generated manuscript by just giving a title and optionally output_dir. All other information will be restored from the pickle backup file.
+            toc_manuscript = ToCManuscript(title="Manuscript title")
         """
 
         self.title = title
@@ -322,8 +325,13 @@ class ToCManuscript(ToCDict):
                 ToCManuscript._restoring = True
                 with open(filepath, 'rb') as file:
                     saved_obj = pickle.load(file)
-                    super(ToCManuscript, self).__dict__.update(saved_obj.__dict__)
-                ToCManuscript._restoring = True
+                    # Update attributes
+                    self.__dict__.update(saved_obj.__dict__)
+                    # Update the dictionary items
+                    for key, value in saved_obj.items():
+                        self[key] = value
+                ToCManuscript._restoring = False
+                print("Manuscript was restored from the previous state")
             else:
                 self.subtitle = subtitle
                 self.author = author
@@ -335,6 +343,8 @@ class ToCManuscript(ToCDict):
                 self.directives = {}
                 self.guidelines = {}
                 self.constraints = {}
+        else:
+            print("Error: Could not initialize the manuscript. Title cannot be empty!")
 
     def __setitem__(self, key, value):
         """
@@ -349,13 +359,13 @@ class ToCManuscript(ToCDict):
             return
 
         # Set global references if prompt properties are not given.
-        if isinstance(value, ToCDict):
-            if "directives" not in value:
-                value["directives"] = self.directives
-            if "guidelines" not in value:
-                value["guidelines"] = self.guidelines
-            if "constraints" not in value:
-                value["constraints"] = self.constraints
+        if isinstance(value, ToCDict) and "prompt" in value:
+            if not value["prompt"].directives:
+                value["prompt"].directives = self.directives
+            if not value["prompt"].guidelines:
+                value[["prompt"].guidelines = self.guidelines
+            if not value["prompt"].constraints:
+                value["prompt"].constraints = self.constraints
 
         super().__setitem__(key, value)
 
