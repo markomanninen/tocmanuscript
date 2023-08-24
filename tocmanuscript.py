@@ -337,12 +337,13 @@ class ToCManuscript(ToCDict):
         :param value: The value to be set for the specified key. If of type 'ToCDict', the object's state is saved.
         """
         # Set global references if prompt properties are not given.
-        if "directives" not in value:
-            value["directives"] = self.directives
-        if "guidelines" not in value:
-            value["guidelines"] = self.guidelines
-        if "constraints" not in value:
-            value["constraints"] = self.constraints
+        if isinstance(value, ToCDict):
+            if "directives" not in value:
+                value["directives"] = self.directives
+            if "guidelines" not in value:
+                value["guidelines"] = self.guidelines
+            if "constraints" not in value:
+                value["constraints"] = self.constraints
 
         super().__setitem__(key, value)
 
