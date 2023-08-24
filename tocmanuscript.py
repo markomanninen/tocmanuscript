@@ -363,7 +363,7 @@ class ToCManuscript(ToCDict):
             if not value["prompt"].directives:
                 value["prompt"].directives = self.directives
             if not value["prompt"].guidelines:
-                value[["prompt"].guidelines = self.guidelines
+                value["prompt"].guidelines = self.guidelines
             if not value["prompt"].constraints:
                 value["prompt"].constraints = self.constraints
 
