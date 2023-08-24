@@ -310,24 +310,30 @@ class ToCManuscript(ToCDict):
             toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
         """
         self.title = title
-        self.subtitle = subtitle
-        self.author = author
-        self.publication_args = kwargs
-        self.created = datetime.now()
-        self.modified = datetime.now()
-        self.completed = False
-        self.currently_editing_index = []
         self.output_dir = output_dir
-        self.directives = {}
-        self.guidelines = {}
-        self.constraints = {}
 
         if self.title:
             filepath = os.path.join(self.output_dir, f'{self.title}.pkl')
             if os.path.exists(filepath):
                 with open(filepath, 'rb') as file:
                     saved_obj = pickle.load(file)
-                    self.__dict__.update(saved_obj.__dict__)
+                    # Update the superclass's dictionary with the saved object's dictionary
+                    super(ToCManuscript, self).__dict__.update(saved_obj.__dict__)
+                    # Update the current object's attributes with those of the saved object
+                    #for key, value in saved_obj.__dict__.items():
+                        # Use setattr to update the attributes without invoking __setitem__
+                    #    setattr(self, key, value)
+            else:
+                self.subtitle = subtitle
+                self.author = author
+                self.publication_args = kwargs
+                self.created = datetime.now()
+                self.modified = datetime.now()
+                self.completed = False
+                self.currently_editing_index = []
+                self.directives = {}
+                self.guidelines = {}
+                self.constraints = {}
 
     def __setitem__(self, key, value):
         """
