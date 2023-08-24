@@ -309,6 +309,9 @@ class ToCManuscript(ToCDict):
             author = Author(name = "John Doe")
             toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
         """
+        # Add a flag to indicate whether the object is being restored
+        self._restoring = True
+
         self.title = title
         self.output_dir = output_dir
 
@@ -334,6 +337,8 @@ class ToCManuscript(ToCDict):
                 self.directives = {}
                 self.guidelines = {}
                 self.constraints = {}
+        # Add a flag to indicate whether the object is being restored
+        self._restoring = False
 
     def __setitem__(self, key, value):
         """
@@ -342,6 +347,9 @@ class ToCManuscript(ToCDict):
         :param key: The key for which the value is to be set.
         :param value: The value to be set for the specified key. If of type 'ToCDict', the object's state is saved.
         """
+        if self._restoring:
+            super().__setitem__(key, value)
+            return
         # Set global references if prompt properties are not given.
         if isinstance(value, ToCDict):
             if "directives" not in value:
