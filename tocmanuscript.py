@@ -340,6 +340,10 @@ class ToCManuscript(ToCDict):
         # Add a flag to indicate whether the object is being restored
         self._restoring = False
 
+    def __reduce__(self):
+        # Return a tuple of class_name to call, arguments to pass to the constructor, and the object's state
+        return (self.__class__, (self.title,), self.__dict__)
+
     def __setitem__(self, key, value):
         """
         Sets the value for the specified key in the instance. If the value is of type 'ToCDict', the current state of the object is saved to a pickle file.
@@ -350,6 +354,7 @@ class ToCManuscript(ToCDict):
         if self._restoring:
             super().__setitem__(key, value)
             return
+
         # Set global references if prompt properties are not given.
         if isinstance(value, ToCDict):
             if "directives" not in value:
