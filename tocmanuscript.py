@@ -206,6 +206,12 @@ class ToCDict(dict):
         # This is the wrong way. Title 2.1 is not going to reach __setitem__.
         a[2] = ToCDict({'title': 'title 2', 1: ToCDict({'title': 'title 2.1'})})
     """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.directives = {}
+        self.guidelines = {}
+        self.constraints = {}
+
     def __setitem__(self, key, value):
         """
         ToCDict __setitem__ overrides the default behavior for setting an item's value. Ensures that the value is a dictionary and contains specific keys like 'prompt' and 'title'. Also manages timestamps for 'created' and 'modified' and sets the 'completed' attribute.
@@ -222,8 +228,15 @@ class ToCDict(dict):
         :raises ValueError: If the value is not a dictionary, if 'prompt' is not a Prompt object, or 'title' is not given.
         """
         if type(value) == ToCDict:
-            if 'prompt' in value and type(value['prompt']) != Prompt:
-                raise ValueError('Prompt must be an object.')
+            if 'prompt' in value:
+                if type(value['prompt']) != Prompt:
+                    raise ValueError('Prompt must be an object.')
+                if not value["prompt"].directives:
+                    value["prompt"].directives = self.directives
+                if not value["prompt"].guidelines:
+                    value["prompt"].guidelines = self.guidelines
+                if not value["prompt"].constraints:
+                    value["prompt"].constraints = self.constraints
             if 'title' not in value:
                 raise ValueError('Title must be given.')
             value['modified'] = datetime.now()
@@ -343,6 +356,8 @@ class ToCManuscript(ToCDict):
                 self.directives = {}
                 self.guidelines = {}
                 self.constraints = {}
+                # Save state.
+                self.pickle()
         else:
             print("Error: Could not initialize the manuscript. Title cannot be empty!")
 
@@ -359,26 +374,39 @@ class ToCManuscript(ToCDict):
             return
 
         # Set global references if prompt properties are not given.
-        if isinstance(value, ToCDict) and "prompt" in value:
-            if not value["prompt"].directives:
-                value["prompt"].directives = self.directives
-            if not value["prompt"].guidelines:
-                value["prompt"].guidelines = self.guidelines
-            if not value["prompt"].constraints:
-                value["prompt"].constraints = self.constraints
+        if isinstance(value, ToCDict):
+            if not value.directives:
+                value.directives = self.directives
+            if not value.guidelines:
+                value.guidelines = self.guidelines
+            if not value.constraints:
+                value.constraints = self.constraints
+            if "prompt" in value:
+                if not value["prompt"].directives:
+                    value["prompt"].directives = self.directives
+                if not value["prompt"].guidelines:
+                    value["prompt"].guidelines = self.guidelines
+                if not value["prompt"].constraints:
+                    value["prompt"].constraints = self.constraints
 
         super().__setitem__(key, value)
 
         # If the value is of type 'ToCDict', execute specific logic (e.g., pickling)
         if isinstance(value, ToCDict):
-            if not self.title:
-                print("Manuscript title is missing. Cannot save the current state of the manuscript.")
-                return
-            if not os.path.exists(self.output_dir):
-                os.makedirs(self.output_dir)
+            self.pickle()
+
+    def pickle(self):
+        if not self.title:
+            print("Manuscript title is missing. Cannot save the current state of the manuscript.")
+            return
+        if self.output_dir and not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        if self.output_dir:
             filepath = os.path.join(self.output_dir, f'{self.title}.pkl')
-            with open(filepath, 'wb') as file:
-                pickle.dump(self, file)
+        else:
+            filepath = os.path.join(f'{self.title}.pkl')
+        with open(filepath, 'wb') as file:
+            pickle.dump(self, file)
 
     def get_filepath(self):
         """
@@ -700,6 +728,9 @@ class ToCManuscript(ToCDict):
         # And the ToCManuscript
         self['updated'] = nested_dict['updated']
 
+        # Save state.
+        self.pickle()
+
     def check_complete(self):
         """
         Checks the completion status of all sections in the manuscript. If all sections are marked as complete, the manuscript's global completion status is set to True. Otherwise, a notice is printed, and a list of all incomplete sections is provided.
@@ -711,6 +742,8 @@ class ToCManuscript(ToCDict):
         if not incomplete_sections:
             print("All sections are completed.")
             self.completed = True
+            # Save state.
+            self.pickle()
         else:
             print("The following sections are not completed:")
             for section in incomplete_sections:
@@ -814,6 +847,8 @@ class ToCManuscript(ToCDict):
         # Find the next index and update the currently_editing_index
         next_index = find_next_index(self.currently_editing_index, self)
         self.currently_editing_index = next_index
+        # Save state.
+        self.pickle()
         return next_index
 
     def print_toc(self):
