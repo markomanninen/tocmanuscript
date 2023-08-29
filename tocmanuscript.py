@@ -260,6 +260,7 @@ Initiate the procedure with the first step!
 """
 
 from datetime import datetime
+import hashlib
 import pickle
 import os
 
@@ -441,10 +442,11 @@ class ToCManuscript(ToCDict):
                 self.guidelines = {}
                 self.constraints = {}
                 self.schema = StorySchema()
-                if nb_file_id:
-                    self.save_title_to_file(nb_file_id, self.title)
                 # Save state.
                 self.pickle()
+				# After directory is ready
+                if nb_file_id:
+                    self.save_title_to_file(nb_file_id, self.title)
 
         else:
             print("Error: Could not initialize the manuscript. Title cannot be empty!")
