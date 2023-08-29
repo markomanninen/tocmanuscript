@@ -13,6 +13,7 @@ With ToCManuscript, you can:
 - **Generate Content Iteratively**: Let ChatGPT create content for each section, one by one, guided by the prompts you've set.
 - **Manage Content Progress**: Track the completion status, edit drafts, and navigate through the TOC.
 - **Export to Markdown**: Save the completed manuscript to a markdown file, ready for further editing or publishing.
+- **Recover**: The state of the manuscript is stored each time you make chances to it. You can restore the manuscript by initializing the main class with the correct title.
 
 Whether you're working on a research paper, a novel, a technical manual, or any other long-form content, ToCManuscript streamlines the process, making it more creative and experimental.
 
