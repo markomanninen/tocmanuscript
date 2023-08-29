@@ -23,45 +23,46 @@ Copy and paste the following wizard prompt to the ChatGPT's text input with Note
 
 # START WIZARD
 
-This step-by-step procedure will help user to generate manuscript content by using ChatGPT and the Noteable plugin. This procedure will download tocmanuscript module, import necessary classes, get documentation, initialize instances of the classes, ask TOC titles and prompts, generate content iteratively section by section, and save the completed manuscript to the `.md` text file.
+This step-by-step procedure facilitates manuscript generation using ChatGPT and the Noteable plugin. The process involves downloading the `tocmanuscript` module, importing the required classes, accessing documentation, initializing class instances, collecting table of contents (TOC) titles and prompts, iteratively generating content section by section, and ultimately saving the completed manuscript as a markdown text file. Each step is stored in notebook cells, allowing for independent execution at any time. For paid v4 users, the associated ChatGPT conversation can be shared to demonstrate the manuscript's creation process.
 
-Steps are stored in the notebook cells for running them independently at any time. The associated ChatGPT conversation can be shared (for paid v4 users) to show how it was used to generate the manuscript.
 
 ## STEP 1 (a-f)
 
-a) Create a new project and notebook, or use current ones.
+a) Start with a new or existing project and notebook.
 
-b) Download the module from GitHub if it is not available in the Noteable project or if the user wants to replace the file with appended option: `-O tocmanuscript.py`:
+b) If the module is not present in your Noteable project or if you wish to replace the existing file, download it from GitHub using the following command with the `-O tocmanuscript.py` option:
 
 ```
 !wget https://raw.githubusercontent.com/markomanninen/tocmanuscript/main/tocmanuscript.py
 ```
 
-c) Import classes:
+c) Import the necessary classes:
 
 ```
 from tocmanuscript import ToCDict, ToCManuscript, Prompt, Author, docs
 ```
 
-d) Read `ToCManuscript`, `Prompt`, `Author`, and `ToCDict` class documentation for later reference:
+d) Access the documentation for the `ToCManuscript`, `Prompt`, `Author`, and `ToCDict` classes for future reference:
 
 ```
 docs(ToCManuscript, Author)
 ```
 
-e) Ask manuscript title and author information from the user.
+e) Prompt the user for the manuscript title and author details.
 
-f) Init `author` and `toc_manuscript` instances with the given information:
+f) Initialize `author` and `toc_manuscript` instances using the information provided:
 
 ```
 author = Author("John Doe")
 toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
 ```
 
+If at any time, notebook kernel breaks down, you can import the main classes, initialize `TocManuscript` with empty arguments, and continue from where you left.
+
 
 ## STEP 2
 
-The user must give a table of contents (TOC) with optional descriptions in a hierarchical tree format:
+In this stage, the user should supply the TOC, optionally including descriptions, formatted as a hierarchical tree:
 
 ```
 Heading 1 [Description]
@@ -71,101 +72,105 @@ Heading 1
 ...
 ```
 
-Ask the user to provide TOC or help the user to create one.
+Either request the TOC from the user or assist in crafting one.
 
 
 ## STEP 3 (a-b)
 
-a) Read prompt class documentation to guide through this step: `docs(Prompt)`
+a) Consult the documentation of the `Prompt` class for guidance on this step: `docs(Prompt)`
 
-b) Set general rules for LLM prompts, for example:
+b) Establish general rules for LLM prompts. For example:
 
 ```
-guidelines={'Role': '{role}', 'Style': '{style}', 'Format': '{format}', 'Context': '{context}', }
-
-constraints={'Content': 'Emit main heading/title in the beginning; Emit the conclusive part at the end of the text; Exclude slang or colloquial language; Do not consume topics and content from the future chapters and sections; Avoid fragmented structures with lots of subtitles', }
+guidelines = {'Role': 'Author', 'Style': 'Formal', 'Format': 'Essay', 'Context': 'Academic Research'}
+constraints = {'Content': 'Start with the main heading/title; Conclude with a summary at the end; Exclude slang or colloquial language; Refrain from covering topics from future chapters and sections; Avoid fragmented structures with excessive subtitles'}
 ```
 
-These can be used as a global system prompt for LLM:
+Apply these as the global system prompt for LLM:
 
 ```
 toc_manuscript.set_guidelines(guidelines)
 toc_manuscript.set_constraints(constraints)
 ```
 
-General rules can be overridden at any specific section prompt.
+Remember, these general rules can be overridden for any specific section prompt.
 
 
 ## STEP 4 (a-b, iterative)
 
 These definitions will guide the future content creation in STEP 5.
 
-a) Generate prompts for each section:
+a) Formulate prompts for individual sections:
 
 ```
 section_1_prompt = Prompt(
-    # Based on the current section title
-    directives = {'Instruction': '{instruction}'}
+    directives = {'Instruction': '...'}
 )
 ```
 
-If you want to override global system content creation rules, set specific guidelines and restrictions for the prompt either in the previous `prompt` initialization step, or with separate assignments:
+To override global guidelines and constraints, specify them either during the `prompt` initialization or later through separate assignments:
 
 ```
 section_1_prompt.guidelines = {}
 section_1_prompt.constraints = {}
 ```
 
-See more help about different prompt parameter options and examples: `print(Prompt.__init__.__doc__)`
+For more information on prompt parameters and examples, consult: `print(Prompt.__init__.__doc__)`
 
-b) Create a title and prompt entry for the section. The value must be `ToCDict` type:
+b) CDefine a title and prompt for the section, making sure the value is of `ToCDict` type:
 
 ```
 toc_manuscript[1] = ToCDict({'title': 'Heading level one', 'prompt': section_1_prompt})
 ```
 
-You may initialize a group of sections, but possibly half a dozen sections at most because the generated text will be limited by context window/max_tokens length of LLM. Proceeding with smaller tasks is best.
+Batch initialization of sections is possible but advisable to limit to a small number, such as half a dozen, due to context window or max_token limitations. It's preferable to proceed with smaller tasks.
 
 Note: if `prompt` is not given, then the `content` is not supposed to be generated, and `completed` parameter will automatically be `True`.
 
-For example:
+Note: When a `prompt` isn't supplied, the `content` won't be generated. For instance:
 
 ```
 toc_manuscript[1] = ToCDict({'title': 'Heading level one', 'prompt': section_1_prompt})
 toc_manuscript[1][1] = ToCDict({'title': 'Heading level two', 'prompt': section_1_1_prompt})
-toc_manuscript[2] = ToCDict({'title': 'Only heading level one', 'completed'=True})
+toc_manuscript[2] = ToCDict({'title': 'Only heading level one'})
 ```
 
-Repeat STEP 4.
+Repeat STEP 4 for additional sections.
 
 
 ## STEP 5 (a-h, iterative)
 
-After the last item in the STEP 4 iteration, call `toc_manuscript.print_toc()` to see the intended table of contents in a plain text format.
+After completing the last iteration in STEP 4, run `toc_manuscript.print_toc()` to display the planned table of contents as plain text.
 
-Once all titles and prompts are set, let Noteable + ChatGPT generate a content for each item in TOC, one by one:
+Now, with all titles and prompts in place, use Noteable + ChatGPT to sequentially generate content for each item in the TOC.
 
-a) `move_to_next_section_and_get_prompts()` is used to shift internal pointer to the next section, see the section index, and the rules and instructions for the content generation and give an idea plus what is coming after this section.
+### STEP 5a
+
+Utilize `move_to_next_section_and_get_prompts()` to advance the internal pointer to the forthcoming section. This will reveal the section index as well as the governing rules and directives for generating its content. Additionally, this provides insight into subsequent sections.
 
 ```
-instructions = toc_manuscript.move_to_next_section_and_get_prompts()
+print(toc_manuscript.move_to_next_section_and_get_prompts())
 ```
 
-The instructions dictionary contain the following keys:
+__Additional Information for STEP 5a__
 
-- current_index: The index of the current section being edited.
-- current_prompt: The prompt for the current section.
-- next_prompt_directives: The directives for the next section's prompt, or "THE END" if there is no next section.
+`move_to_next_section_and_get_prompts()` returns the `instructions` dictionary which includes:
 
-The `next_prompt_directives` is meant to prevent LLM from telling/revealing the forthcoming details of the sections in the current section content generation. This ensure a natural flow and continuation without repeating the same material.
+- `current_index`: Denotes the section currently under consideration.
+- `current_prompt`: Provides the prompt allocated for this specific section.
+- `next_prompt_directives`: Outlines the directives for the succeeding section's prompt. If no further sections exist, this key will read "THE END."
 
-Note: If `current_prompt` is empty, call `move_to_next_section_and_get_prompts()` again to move to the next section.
+The `next_prompt_directives` key serves a specific function: to prevent LLM from divulging information about future sections during current content generation. This ensures continuity and avoids repetitive content.
 
-If `next_prompt_directives` is `THE END`, it indicates that the manuscript is reaching the end after the current iteration.
+Note: If `current_prompt` returns empty, it's an indication to invoke `move_to_next_section_and_get_prompts()` once more to skip to the succeeding section.
 
-Wait for a user's permission to proceed to the next phases, b - h. It is important to stop at this phase and let LLM read and comprehend the last output about the instructions by printing them on the user chat interface.
+Reaching "THE END" in `next_prompt_directives` implies that the manuscript generation will soon conclude.
 
-b) Generate content with maximum length/tokens as a string with double line breaks indicating paragraphs:
+Before advancing to the next phases, b-h, seek user authorization. Pausing at this juncture allows LLM to digest the latest instructions, displayed on the user chat interface.
+
+### STEP 5b
+
+Generate the section's content, adhering to token or length limitations. Use double line breaks to signify new paragraphs:
 
 ```
 section_content = '''
@@ -173,27 +178,37 @@ LLM generated content...
 '''
 ```
 
-Output content for a user review.
+Display the generated content for user review.
 
-Note: You do not need to create redundant placeholders and variables for the content. There is no content generation method in `ToCManuscript` class. It needs to be generated by LLM (ChatGPT).
+Note: Refrain from using extraneous placeholders or variables for this content. `ToCManuscript` class does not feature a method for content generation; this task is solely handled by LLM (ChatGPT).
 
-c) Examine, analyze, and give a critical review of the generated content. Investigate textual devices and techniques utilized in it. Confirm that general guidelines and constraints are properly considered. Give a list of improvements.
+### STEP 5c
 
-d) Address the suggestions and regenerate the content with maximum length/tokens.
+Scrutinize the generated text, evaluating its literary elements and techniques. Ensure compliance with the initial guidelines and constraints. Identify areas for refinement.
 
-e) Set final revised content and completion state (`True`|`False`). Boolean `True` means complete, `False` means a draft, which is the default value:
+### STEP 5d
+
+Incorporate the identified improvements and produce a revised version of the content, still observing token or length limits.
+
+### STEP 5e
+
+Store the finalized content and its completion status, which can be either `True` for complete or `False` for a draft. By default, the state is set to `False`:
 
 ```
-toc_manuscript.set_currently_editing_content(content, completed=False)
+toc_manuscript.set_currently_editing_content(section_content, completed=True)
 ```
 
-f) Summarize the previous section content so that the next content generation will not repeat the same:
+### STEP 5f
+
+Condense the essence of the previously generated content to avoid repetition in future content generation:
 
 ```
-toc_manuscript.set_currently_editing_summary('{summary}')
+toc_manuscript.set_currently_editing_summary('...')
 ```
 
-g) Optionally, populate story schema, replacing the example data and following the next method calls:
+### STEP 5g
+
+If applicable, fill in the story schema by substituting example data in subsequent method calls:
 
 ```
 # Add a character(s)
@@ -212,25 +227,27 @@ toc_manuscript.schema.add_timeline("2023", {'August': {'29': [{'Event': 'Alice f
 toc_manuscript.schema.add_object_or_symbol("Chapter 1", [{'Object': 'Mysterious Door', 'Description': 'An intricately carved door standing alone', 'Significance': 'Gateway to another world', 'Material': 'Wood', 'Age': 'Ancient'}])
 ```
 
-You may call method multiple times, if the currenct section has multiple items.
+Multiple method calls can be executed within the current section if its sub schema contains multiple items.
 
-h) Finally, if `next_prompt_directives` is THE END, then jump to STEP 6. Else repeat STEP 5.
+### STEP 5h
+
+If `next_prompt_directives` reads "THE END," proceed to STEP 6. Otherwise, loop back to STEP 5.
 
 
 ## STEP 6 (a-c)
 
-a) Use `toc_manuscript.check_complete()` to see the current state of completed sections.
+a) Determine the completion status of various sections using `toc_manuscript.check_complete()`.
 
-b) Once all contents are set, store the generated content in the text directory to the markdown file:
+b) When all sections are populated, save the assembled content to a markdown file in the text directory:
 
 ```
 manuscript_content = toc_manuscript.generate()
 filepath = toc_manuscript.get_filepath()
 ```
 
-If content has been marked with `completed = False`, it will be denoted by (draft) mark in the heading and appended by prompt information.
+Sections flagged with `completed = False` will feature a (draft) label in the heading and will also show the associated prompt information.
 
-c) You can also just output the content without storing it:
+c) Alternatively, simply retrieve the manuscript content without storing it:
 
 ```
 manuscript_content = toc_manuscript.get_content()
@@ -238,7 +255,7 @@ manuscript_content = toc_manuscript.get_content()
 
 ---
 
-Start with the first step!
+Initiate the procedure with the first step!
 
 """
 
@@ -313,10 +330,6 @@ class ToCDict(dict):
         super().__setitem__(key, value)
 
 class ToCManuscript(ToCDict):
-
-  	# Flag for objects restorage process.
-    _restoring = False
-
     """
     The ToCManuscript class represents a manuscript with a table of contents, content sections, author information, and other publication-related properties. It provides methods for managing the manuscript's structure, content, and metadata, and for generating a Markdown file representing the manuscript.
 
@@ -336,10 +349,8 @@ class ToCManuscript(ToCDict):
 
         # Iterate 2-3
         # 2. Set index and get prompt
-        # a) Determine index
-        toc_manuscript.currently_editing_index = [1]
-        # b) Get and output prompt to help LLM in content generation.
-        print(toc_manuscript.get_currently_editing_prompt())
+        # Get and output prompt to help LLM in content generation.
+        print(toc_manuscript.move_to_next_section_and_get_prompts())
 
         # 3. Generate content
         # c) Placeholder for LLM text-generated content
@@ -351,12 +362,16 @@ class ToCManuscript(ToCDict):
         # 4. Check if all sections are completed
         toc_manuscript.check_complete()
 
-        # 5. Output to .md text file
+        # 5. Output to the markdown text file
         toc_manuscript.generate()
 
     See more: print(ToCManuscript.__init__.__doc__)
     """
-    def __init__(self, title, subtitle = '', author = None, output_dir = 'text_output', **kwargs):
+
+  	# Flag for objects restorage process.
+    _restoring = False
+
+    def __init__(self, title = '', subtitle = '', author = None, output_dir = 'text_output', **kwargs):
         """
         Initializes the ToCManuscript class with the given manuscript title, author, and additional publication-related properties.
 
@@ -395,6 +410,11 @@ class ToCManuscript(ToCDict):
         self.title = title
         self.output_dir = output_dir
 
+        # Try to restore ToCManuscript instance from hash file.
+        nb_file_id = os.environ['NTBL_FILE_ID']
+        if not self.title and nb_file_id:
+            self.title = self.retrieve_title(nb_file_id)
+
         if self.title:
             filepath = os.path.join(self.output_dir, f'{self.title}.pkl')
             if os.path.exists(filepath):
@@ -421,10 +441,28 @@ class ToCManuscript(ToCDict):
                 self.guidelines = {}
                 self.constraints = {}
                 self.schema = StorySchema()
+                if nb_file_id:
+                    self.save_title_to_file(nb_file_id, self.title)
                 # Save state.
                 self.pickle()
+
         else:
             print("Error: Could not initialize the manuscript. Title cannot be empty!")
+
+    def retrieve_title(self, nb_file_id):
+        hash_object = hashlib.sha256(nb_file_id.encode())
+        hash = hash_object.hexdigest()
+        filepath = os.path.join(self.output_dir, f'{hash}.title')
+        if os.path.exists(filepath):
+            with open(filepath, 'r') as file:
+                return file.read()
+
+    def save_title_to_file(self, nb_file_id, title):
+        hash_object = hashlib.sha256(nb_file_id.encode())
+        hash = hash_object.hexdigest()
+        filepath = os.path.join(self.output_dir, f'{hash}.title')
+        with open(filepath, 'w') as file:
+            file.write(title)
 
     def set_schema(self, schema):
         self.schema = schema
@@ -434,10 +472,16 @@ class ToCManuscript(ToCDict):
         self['updated'] = datetime.now()
         self.pickle()
 
+    def get_guidelines(self):
+        return self.guidelines
+
     def set_constraints(self, constraints):
         self.constraints = constraints
         self['updated'] = datetime.now()
         self.pickle()
+
+    def get_constraints(self):
+        return self.constraints
 
     def __setitem__(self, key, value):
         """
