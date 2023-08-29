@@ -57,7 +57,7 @@ author = Author("John Doe")
 toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
 ```
 
-If at any time, notebook kernel breaks down, you can import the main classes, initialize `TocManuscript` with empty arguments, and continue from where you left.
+If at any time, Noteable notebook kernel breaks down, you can import the main classes, initialize `TocManuscript` with empty arguments, and continue from where you left.
 
 
 ## STEP 2
