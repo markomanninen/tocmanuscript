@@ -62,12 +62,18 @@ class SchemaValidator:
                 if isinstance(value[0], dict):
                     self.validate(value[0])
                 elif isinstance(value[0], str):
+                    """
                     if value[0].lower() not in ['string', 'list of strings']:
                         raise ValueError(f"Schema key '{key}' has an unsupported type '{value[0]}'.")
+                    """
+                    pass
 
             elif isinstance(value, str):
+                """
                 if value.lower() not in ['string', 'list of strings']:
                     raise ValueError(f"Schema key '{key}' has an unsupported type '{value}'.")
+                """
+                pass
 
             else:
                 raise TypeError(f"Schema key '{key}' has an unsupported type '{type(value).__name__}'.")
@@ -252,7 +258,7 @@ class Schema(SchemaValidator):
                 setattr(self, f'remove_{subschema.lower()}', partial(self._remove_from_subschema, subschema))
 
 
-    def _add_to_subschema(self, subschema_key, item_key, item_dict, index=None):
+    def _add_to_subschema(self, subschema_key, item_key=None, item_dict=None, index=None):
         """
         Private method to add or update an item in a specific subschema.
 
@@ -269,17 +275,15 @@ class Schema(SchemaValidator):
             _add_to_subschema('Character', 'John Doe', {'Role': 'Protagonist', 'Traits': ['Brave', 'Smart']})
             # Result: self.data['Character']['John Doe'] = {'Role': 'Protagonist', 'Traits': ['Brave', 'Smart']}
 
-            # For a subschema 'Scene' that expects a list
+            # For a subschema 'Scene' -> 'Chapter 1' that expects a list
             _add_to_subschema('Scene', 'Chapter 1', {'Section_Title': 'Introduction', 'Setting': 'Forest', 'Characters': ['John Doe']})
-            # Result: self.data['Scene'].append({'Chapter 1': {'Section_Title': 'Introduction', 'Setting': 'Forest', 'Characters': ['John Doe']}})
+            # Result: self.data['Scene']['Chapter 1'].append({'Section_Title': 'Introduction', 'Setting': 'Forest', 'Characters': ['John Doe']})
 
             # For a subschema 'Place' that expects a list
-            _add_to_subschema('Place', None, {'Place': 'Castle', 'Description': 'Large and foreboding', 'Significance': 'Main setting'})
+            _add_to_subschema('Place', {'Place': 'Castle', 'Description': 'Large and foreboding', 'Significance': 'Main setting'})
             # Result: self.data['Place'].append({'Place': 'Castle', 'Description': 'Large and foreboding', 'Significance': 'Main setting'})
         """
         schema_type = self.schema.get(subschema_key)
-        if schema_type is None:
-            raise KeyError(f"Subschema key {subschema_key} not found in schema.")
 
         if subschema_key not in self.data:
             if isinstance(schema_type, list):
@@ -290,15 +294,32 @@ class Schema(SchemaValidator):
         current_data = self.data[subschema_key]
 
         if isinstance(schema_type, list):
-            if index is not None:
-                current_data.insert(index, item_dict if item_key is None else {item_key: item_dict})
+            if item_key is None:
+                if index is not None:
+                    current_data.insert(index, item_dict)
+                else:
+                    current_data.append(item_dict)
             else:
-                current_data.append(item_dict if item_key is None else {item_key: item_dict})
+                if index is not None:
+                    current_data.insert(index, {item_key: item_dict})
+                else:
+                    current_data.append(item_key)
         elif isinstance(schema_type, dict):
-            if item_key in current_data:
-                current_data[item_key].update(item_dict)
+
+            def check_first_item_is_list(my_dict):
+                first_key = list(my_dict.keys())[0]
+                return isinstance(my_dict[first_key], list)
+
+            if check_first_item_is_list(schema_type):
+                if item_key not in current_data:
+                    current_data[item_key] = []
+                current_data[item_key].append(item_dict)
             else:
-                current_data[item_key] = item_dict
+                if item_key is not None:
+                    if item_key in current_data:
+                        current_data[item_key].update(item_dict)
+                    else:
+                        current_data[item_key] = item_dict
 
     def _get_from_subschema(self, subschema_key, item_key=None, index=None):
         """
@@ -319,34 +340,52 @@ class Schema(SchemaValidator):
                                  the entire subschema data.
 
         Examples:
-            # Retrieve a specific character
+            # Retrieve a specific character as a dictionary
             self._get_from_subschema('Character', 'Alice')
 
-            # Retrieve all characters
+            # Retrieve all characters in a dictionary
             self._get_from_subschema('Character')
 
-            # Retrieve scenes in 'Chapter 1'
+            # Retrieve list of scenes in 'Chapter 1'
             self._get_from_subschema('Scene', 'Chapter 1')
 
-            # Retrieve a specific scene from a list of scenes in 'Chapter 1'
+            # Retrieve a specific scene from a list of scenes by index
             self._get_from_subschema('Scene', 'Chapter 1', 0)
 
             # Retrieve a specific place from a list of places by index
-            self._get_from_subschema('Place', None, 0)
+            self._get_from_subschema('Place', 0)
 
-            # Retrieve all places
+            # Retrieve a list all places
             self._get_from_subschema('Place')
         """
-        if isinstance(self.data[subschema_key], dict):
-            return self.data[subschema_key].get(item_key, {}) if item_key else self.data[subschema_key]
-        elif isinstance(self.data[subschema_key], list):
+        schema_type = self.schema.get(subschema_key)
+
+        current_data = self.data[subschema_key]
+
+        if isinstance(schema_type, dict):
+            def check_first_item_is_list(my_dict):
+                first_key = list(my_dict.keys())[0]
+                return isinstance(my_dict[first_key], list)
+
+            if item_key and index is not None:
+                try:
+                    subdata = current_data[item_key]
+                    return subdata[index]
+                except (KeyError, IndexError):
+                    return None
+            else:
+                if check_first_item_is_list(schema_type):
+                    return current_data.get(item_key, None) if item_key else current_data
+                else:
+                	return current_data.get(item_key, {}) if item_key else current_data
+        elif isinstance(schema_type, list):
             if item_key is not None:
                 try:
-                    return self.data[subschema_key][item_key]
+                    return current_data[item_key]
                 except IndexError:
                     return None
             else:
-                return self.data[subschema_key]
+                return current_data
 
     def _remove_from_subschema(self, subschema_key, item_key, index=None):
         """
@@ -377,17 +416,19 @@ class Schema(SchemaValidator):
 
             # For a subschema 'Scene' that expects a list
             _remove_from_subschema('Scene', 'Chapter 1', 0)
-            # Result: Removes the first entry with the key 'Chapter 1' from the list self.data['Scene']
+            # Result: Removes the first entry with the key 'Chapter 1' from the list self.data['Scene']['Chapter 1']
 
             # For a subschema 'Place' that expects a list
-            _remove_from_subschema('Place', None, 0)
+            _remove_from_subschema('Place', 0)
             # Result: Removes the first entry from the list self.data['Place']
         """
         if isinstance(self.data[subschema_key], dict):
-            if item_key in self.data[subschema_key]:
-                del self.data[subschema_key][item_key]
+            if item_key and index is not None:
+                self.data[subschema_key][item_key].pop(index)
+            else:
+                if item_key in self.data[subschema_key]:
+                    del self.data[subschema_key][item_key]
         elif isinstance(self.data[subschema_key], list):
-            print(subschema_key, item_key, index)
             self.data[subschema_key] = [item for i, item in enumerate(self.data[subschema_key]) if i != item_key]
 
 

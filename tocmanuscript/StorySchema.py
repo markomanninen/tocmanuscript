@@ -1,9 +1,9 @@
 from .Schema import Schema
 
 class StorySchema(Schema):
-	
+
     schema = {
-        'Characters': {
+        'Character': {
             'Character_Name': {
                 'Role': 'String',
                 'Traits': ['List of Strings'],
@@ -12,7 +12,7 @@ class StorySchema(Schema):
                 'Persona': 'String'
             },
         },
-        'Scenes': {
+        'Scene': {
             'Chapter_Title': [
                 {
                     'Section_Title': 'String',
@@ -22,7 +22,7 @@ class StorySchema(Schema):
                 },
             ],
         },
-        'Places_and_Locations': {
+        'Place': {
             'Chapter_Title': [
                 {
                     'Place': 'String',
@@ -49,7 +49,7 @@ class StorySchema(Schema):
                 },
             },
         },
-        'Objects_and_Symbols': {
+        'Object': {
             'Chapter_Title': [
                 {
                     'Object': 'String',
@@ -60,7 +60,7 @@ class StorySchema(Schema):
                 },
             ],
         },
-        'Directives': {
+        'Directive': {
             'Section_Title': {
                 'Objective': 'String',
                 'KeyEvents': ['List of Strings'],
