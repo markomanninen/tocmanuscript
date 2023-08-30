@@ -75,7 +75,7 @@ author = Author("John Doe")
 toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
 ```
 
-If at any time, Noteable notebook kernel breaks down, you can import the main classes, initialize `TocManuscript` with empty arguments, and continue from where you left.
+If at any time, Noteable notebook kernel breaks down, you can import the main classes, initialize `toc_manuscript = ToCManuscript()` with empty arguments, and continue from where you left.
 
 
 ## STEP 2
@@ -97,7 +97,7 @@ Either request the TOC from the user or assist in crafting one.
 
 a) Consult the documentation of the `Prompt` class for guidance on this step: `docs(Prompt)`
 
-b) Establish general rules for LLM prompts. For example:
+b) Establish general rules for LLM/GPT (Large Language Model/Generative Pre-trained Transformer) prompts. For example:
 
 ```
 guidelines = {'Role': 'Author', 'Style': 'Formal', 'Format': 'Essay', 'Context': 'Academic Research'}

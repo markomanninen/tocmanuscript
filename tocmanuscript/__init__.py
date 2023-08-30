@@ -1,4 +1,7 @@
-from .core import ToCManuscript, ToCDict, Prompt, Author, StorySchema
+from .core import ToCManuscript, ToCDict, Prompt, Author
+from .Schema import Schema
+from .StorySchema import StorySchema
+from .ResearchSchema import ResearchSchema
 
 def docs(*args):
     """ Print doc string of the main classes. """

@@ -57,7 +57,7 @@ author = Author("John Doe")
 toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
 ```
 
-If at any time, Noteable notebook kernel breaks down, you can import the main classes, initialize `TocManuscript` with empty arguments, and continue from where you left.
+If at any time, Noteable notebook kernel breaks down, you can import the main classes, initialize `toc_manuscript = ToCManuscript()` with empty arguments, and continue from where you left.
 
 
 ## STEP 2
@@ -79,7 +79,7 @@ Either request the TOC from the user or assist in crafting one.
 
 a) Consult the documentation of the `Prompt` class for guidance on this step: `docs(Prompt)`
 
-b) Establish general rules for LLM prompts. For example:
+b) Establish general rules for LLM/GPT (Large Language Model/Generative Pre-trained Transformer) prompts. For example:
 
 ```
 guidelines = {'Role': 'Author', 'Style': 'Formal', 'Format': 'Essay', 'Context': 'Academic Research'}
@@ -382,7 +382,7 @@ class ToCManuscript(ToCDict):
                 self.schema = StorySchema()
                 # Save state.
                 self.pickle()
-				# After directory is ready
+                # After directory is ready
                 if nb_file_id:
                     self.save_title_to_file(nb_file_id, self.title)
 
@@ -404,7 +404,25 @@ class ToCManuscript(ToCDict):
         with open(filepath, 'w') as file:
             file.write(title)
 
+    def get_schema(self):
+        """
+        Retrieves the current schema instance for this Schema or its subclass.
+
+        Returns:
+            Schema: An instance of the Schema class or its subclass that represents the current schema structure.
+        """
+        return self.schema
+
     def set_schema(self, schema):
+        """
+        Sets a new schema instance for this Schema or its subclass.
+
+        Parameters:
+            schema (Schema): An instance of the Schema class or its subclass to set as the new schema.
+
+        Note:
+            Typically, this is set during initialization, e.g., self.schema = StorySchema().
+        """
         self.schema = schema
 
     def set_guidelines(self, guidelines):
@@ -1056,8 +1074,8 @@ class ToCManuscript(ToCDict):
         return {
             "current_index": current_index,
             "current_prompt": current_prompt,
-    # Remove next directive if current prompt is empty, because it will misguide LLM to generatae content rather than move to the next prompt.
-            "next_prompt_directives": next_prompt_directives.directives if current_prompt and next_prompt_directives else ""
+            # Remove next directive if current prompt is empty, because it will misguide LLM to generatae content rather than move to the next prompt.
+            "next_prompt_directives": next_prompt_directives['directives'] if current_prompt and 'directives' in next_prompt_directives else next_prompt_directives if next_prompt_directives else ""
         }
 
     def print_toc(self, output_summaries = True):
