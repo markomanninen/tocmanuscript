@@ -1393,10 +1393,10 @@ class StorySchema():
         story_schema.add_object_or_symbol("Chapter 1", [{'Object': 'Mysterious Door', 'Description': 'An intricately carved door standing alone', 'Significance': 'Gateway to another world', 'Material': 'Wood', 'Age': 'Ancient'}])
 
         # Retrieve the entire schema
-    print(story_schema.get_schema())
+        print(story_schema.get_schema())
 
-    # Retrieve a specific subschema, e.g., 'Characters'
-    print(story_schema.get_schema('Characters'))
+        # Retrieve a specific subschema, e.g., 'Characters'
+        print(story_schema.get_schema('Characters'))
     """
     schema = {
         'Characters': {
