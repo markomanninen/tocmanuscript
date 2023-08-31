@@ -16,6 +16,9 @@ class TestSchema(unittest.TestCase):
             'Section_Title': 'Introduction',
             'Setting': 'Forest',
             'Characters': ['Alice', 'Rabbit'],
+            'Places': ['Forest'],
+            'Objects': ['Amulet'],
+            'Symbols': ['Ouroboros'],
             'Key Elements': ['Rabbit Hole']
         }
         self.schema.add_scene('Chapter 1', scene_data)
@@ -23,13 +26,25 @@ class TestSchema(unittest.TestCase):
 
     def test_add_place(self):
         place_data = {
-            'Place': 'Wonderland',
+            'Name': 'Wonderland',
             'Description': 'Magical',
             'Significance': 'Central location'
         }
-        self.schema.add_place('Chapter 1', place_data)
-        self.assertEqual(self.schema.get_place('Chapter 1'), [place_data])
+        self.schema.add_place(place_data)
+        self.assertEqual(self.schema.get_place(), [place_data])
 
+    def test_add_timeline(self):
+        event_data = {
+            'Time': 'String',
+            'Event': 'String',
+            'Type': 'Normal/Dream/TimeTravel',
+            'Significance': 'String'
+        }
+        self.schema.add_timeline(event_data)
+        self.assertEqual(self.schema.get_timeline(0), event_data)
+        self.assertEqual(self.schema.get_timelines(), [event_data])
+
+    """
     def test_add_timeline_event(self):
         event_data = {
             'Event': 'Alice falls',
@@ -47,17 +62,18 @@ class TestSchema(unittest.TestCase):
         self.assertEqual(self.schema.get_timeline('2023'), {'August': {'30': [event_data]}})
         self.assertEqual(self.schema.get_timeline(), {'2023': {'August': {'30': [event_data]}}})
         self.assertEqual(self.schema.get_timelines(), {'2023': {'August': {'30': [event_data]}}})
+    """
 
     def test_add_object(self):
         object_data = {
-            'Object': 'Pocket Watch',
+            'Name': 'Pocket Watch',
             'Description': 'Golden',
             'Significance': 'Timekeeping',
             'Material': 'Gold',
             'Age': 'Ancient'
         }
-        self.schema.add_object('Chapter 1', object_data)
-        self.assertEqual(self.schema.get_object('Chapter 1'), [object_data])
+        self.schema.add_object(object_data)
+        self.assertEqual(self.schema.get_object(), [object_data])
 
     def test_add_directive(self):
         directive_data = {

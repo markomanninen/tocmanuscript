@@ -6,7 +6,6 @@ class Author(dict):
     Example:
         author = Author(name="Jane Doe", email="jane.doe@example.com", affiliation="Famous University")
         print(author['name'])  # Output: Jane Doe
-        print(author['email']) # Output: jane.doe@example.com
 
     See more: print(Author.__init__.__doc__)
     """
@@ -42,4 +41,7 @@ class Author(dict):
 
     def __repr__(self):
         kwargs_str = ', '.join(f"{k}={repr(v)}" for k, v in self.items() if k != 'name')
-        return f"Author(name={repr(self.get('name'))}, {kwargs_str})"
+        if kwargs_str:
+            return f"Author(name={repr(self.get('name'))}, {kwargs_str})"
+        else:
+            return f"Author(name={repr(self.get('name'))})"

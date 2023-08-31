@@ -412,7 +412,7 @@ class ToCManuscript(ToCDict):
         self.output_dir = output_dir
 
         # Try to restore ToCManuscript instance from hash file.
-        nb_file_id = os.environ['NTBL_FILE_ID']
+        nb_file_id = os.environ.get('NTBL_FILE_ID', None)
         if not self.title and nb_file_id:
             self.title = self.retrieve_title(nb_file_id)
 
@@ -1119,7 +1119,7 @@ class ToCManuscript(ToCDict):
             "current_index": current_index,
             "current_prompt": current_prompt,
             # Remove next directive if current prompt is empty, because it will misguide LLM to generatae content rather than move to the next prompt.
-            "next_prompt_directives": next_prompt_directives['directives'] if current_prompt and 'directives' in next_prompt_directives else next_prompt_directives if next_prompt_directives else ""
+            "next_prompt_directives": next_prompt_directives.directives if current_prompt and hasattr(next_prompt_directives, 'directives') else next_prompt_directives if isinstance(next_prompt_directives, dict) else ""
         }
 
     def print_toc(self, output_summaries = True):
