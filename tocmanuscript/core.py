@@ -355,7 +355,8 @@ class ToCManuscript(ToCDict):
             self.title = self.retrieve_title(nb_file_id)
 
         if self.title:
-            filepath = os.path.join(self.output_dir, f'{self.title}.pkl')
+            self.safe_title = re.sub('[^a-zA-Z0-9 \n\.]', '', self.title).replace(" ", "_")
+            filepath = os.path.join(self.output_dir, f'{self.safe_title}.pkl')
             if os.path.exists(filepath):
                 ToCManuscript._restoring = True
                 with open(filepath, 'rb') as file:
@@ -384,7 +385,7 @@ class ToCManuscript(ToCDict):
                 self.pickle()
                 # After directory is ready
                 if nb_file_id:
-                    self.save_title_to_file(nb_file_id, self.title)
+                    self.save_title_to_file(nb_file_id, self.safe_title)
 
         else:
             print("Error: Could not initialize the manuscript. Title cannot be empty!")
@@ -503,9 +504,9 @@ class ToCManuscript(ToCDict):
         if self.output_dir and not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
         if self.output_dir:
-            filepath = os.path.join(self.output_dir, f'{self.title}.pkl')
+            filepath = os.path.join(self.output_dir, f'{self.safe_title}.pkl')
         else:
-            filepath = os.path.join(f'{self.title}.pkl')
+            filepath = os.path.join(f'{self.safe_title}.pkl')
         with open(filepath, 'wb') as file:
             pickle.dump(self, file)
 
@@ -520,12 +521,12 @@ class ToCManuscript(ToCDict):
 
         Example:
             Assuming 'self.title' is "My Manuscript" and 'self.output_dir' is "text_output":
-            The returned file path will be "text_output/My Manuscript.md".
+            The returned file path will be "text_output/My_Manuscript.md".
         """
         if not self.title:
             print("Manuscript title is missing!")
             return ''
-        return os.path.join(self.output_dir, f'{self.title}.md')
+        return os.path.join(self.output_dir, f'{self.safe_title}.md')
 
     def get_content(self):
         """
