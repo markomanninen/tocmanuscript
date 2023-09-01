@@ -59,9 +59,9 @@ b) If the module is not present in your Noteable project or if you wish to repla
 
 c) Import the necessary classes:
 
-from tocmanuscript import ToCDict, ToCManuscript, Prompt, Author, docs
+from tocmanuscript import ToCManuscript, Prompt, Author, docs, configure
 
-d) Access the documentation for the ToCManuscript, Prompt, Author, and ToCDict classes for future reference:
+d) Access the documentation for the ToCManuscript, Prompt, and Author classes for future reference:
 
 docs(ToCManuscript, Author)
 
@@ -122,9 +122,9 @@ section_1_prompt.constraints = {}
 
 For more information on prompt parameters and examples, consult: print(Prompt.__init__.__doc__)
 
-b) CDefine a title and prompt for the section, making sure the value is of ToCDict type:
+b) Set a title and prompt for the section:
 
-toc_manuscript[1] = ToCDict({'title': 'Heading level one', 'prompt': section_1_prompt})
+toc_manuscript.set_section([1], title='Heading level one', prompt=section_1_prompt)
 
 Batch initialization of sections is possible but advisable to limit to a small number, such as half a dozen, due to context window or max_token limitations. It's preferable to proceed with smaller tasks.
 
@@ -132,9 +132,9 @@ Note: if prompt is not given, then the content is not supposed to be generated, 
 
 Note: When a prompt isn't supplied, the content won't be generated. For instance:
 
-toc_manuscript[1] = ToCDict({'title': 'Heading level one', 'prompt': section_1_prompt})
-toc_manuscript[1][1] = ToCDict({'title': 'Heading level two', 'prompt': section_1_1_prompt})
-toc_manuscript[2] = ToCDict({'title': 'Only heading level one'})
+toc_manuscript.set_section([1], title='Heading level one', prompt=section_1_prompt)
+toc_manuscript.set_section([1, 1], title='Heading level two', prompt=section_1_1_prompt)
+toc_manuscript.set_section([2], title='Only heading level one')
 
 Repeat STEP 4 for additional sections.
 
