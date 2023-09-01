@@ -39,10 +39,10 @@ b) If the module is not present in your Noteable project or if you wish to repla
 c) Import the necessary classes:
 
 ```
-from tocmanuscript import ToCDict, ToCManuscript, Prompt, Author, docs
+from tocmanuscript import ToCManuscript, Prompt, Author, docs, configure
 ```
 
-d) Access the documentation for the `ToCManuscript`, `Prompt`, `Author`, and `ToCDict` classes for future reference:
+d) Access the documentation for the `ToCManuscript`, `Prompt`, and `Author` classes for future reference:
 
 ```
 docs(ToCManuscript, Author)
@@ -117,10 +117,10 @@ section_1_prompt.constraints = {}
 
 For more information on prompt parameters and examples, consult: `print(Prompt.__init__.__doc__)`
 
-b) CDefine a title and prompt for the section, making sure the value is of `ToCDict` type:
+b) Set a title and prompt for the section:
 
 ```
-toc_manuscript[1] = ToCDict({'title': 'Heading level one', 'prompt': section_1_prompt})
+toc_manuscript.set_section([1], title='Heading level one', prompt=section_1_prompt)
 ```
 
 Batch initialization of sections is possible but advisable to limit to a small number, such as half a dozen, due to context window or max_token limitations. It's preferable to proceed with smaller tasks.
@@ -130,9 +130,9 @@ Note: if `prompt` is not given, then the `content` is not supposed to be generat
 Note: When a `prompt` isn't supplied, the `content` won't be generated. For instance:
 
 ```
-toc_manuscript[1] = ToCDict({'title': 'Heading level one', 'prompt': section_1_prompt})
-toc_manuscript[1][1] = ToCDict({'title': 'Heading level two', 'prompt': section_1_1_prompt})
-toc_manuscript[2] = ToCDict({'title': 'Only heading level one'})
+toc_manuscript.set_section([1], title='Heading level one', prompt=section_1_prompt)
+toc_manuscript.set_section([1, 1], title='Heading level two', prompt=section_1_1_prompt)
+toc_manuscript.set_section([2], title='Only heading level one')
 ```
 
 Repeat STEP 4 for additional sections.
@@ -266,7 +266,7 @@ from .StorySchema import StorySchema
 from datetime import datetime
 import hashlib
 import pickle
-import os
+import os, re
 
 class ToCManuscript(ToCDict):
     """
@@ -278,13 +278,12 @@ class ToCManuscript(ToCDict):
         toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
 
         # 1. Set titles and prompts (iterative)
-        toc_manuscript[1] = ToCDict({
-            'title': 'Heading level one'
-        })
-        toc_manuscript[1][1] = ToCDict({
-            'title': 'Heading level two',
-            'prompt': Prompt(directives={'Question': 'How to write a best-seller?'}),
-        })
+        toc_manuscript.set_section([1], title='Heading level one')
+        toc_manuscript.set_section(
+            [1, 1], 
+            title='Heading level two', 
+            prompt=Prompt(directives={'Question': 'How to write a best-seller?'})
+        )
 
         # Iterate 2-3
         # 2. Set index and get prompt
@@ -307,17 +306,19 @@ class ToCManuscript(ToCDict):
     See more: print(ToCManuscript.__init__.__doc__)
     """
 
+    # Manuscript generation directory for final output and temp files.
+    _output_directory = 'text_output'
+
   	# Flag for objects restorage process.
     _restoring = False
 
-    def __init__(self, title = '', subtitle = '', author = None, output_dir = 'text_output', **kwargs):
+    def __init__(self, title = '', subtitle = '', author = None, **kwargs):
         """
         Initializes the ToCManuscript class with the given manuscript title, author, and additional publication-related properties.
 
         :param title: The title of the manuscript as a string.
         :param subtitle: The subtitle of the manuscript as a string.
         :param author: An Author object representing the author of the instance.
-        :param output_dir: Output directory name where the manuscript is stored on the generate function call.
         :param kwargs: Optional keyword arguments representing publication-related properties, such as:
             - 'publisher': The publisher's name or object.
             - 'publish_date': The date of publication.
@@ -342,12 +343,12 @@ class ToCManuscript(ToCDict):
         Example:
             author = Author(name = "John Doe")
             toc_manuscript = ToCManuscript(title="Manuscript title", author=author)
-            # Restore already generated manuscript by just giving a title and optionally output_dir. All other information will be restored from the pickle backup file.
+            # Restore already generated manuscript by just giving a title. All other information will be restored from the pickle backup file.
             toc_manuscript = ToCManuscript(title="Manuscript title")
         """
 
         self.title = title
-        self.output_dir = output_dir
+        self.output_dir = ToCManuscript._output_directory
 
         # Try to restore ToCManuscript instance from hash file.
         nb_file_id = os.environ.get('NTBL_FILE_ID', None)
@@ -355,15 +356,16 @@ class ToCManuscript(ToCDict):
             self.title = self.retrieve_title(nb_file_id)
 
         if self.title:
+            # Make file name safe title.
             self.safe_title = re.sub('[^a-zA-Z0-9 \n\.]', '', self.title).replace(" ", "_")
             filepath = os.path.join(self.output_dir, f'{self.safe_title}.pkl')
             if os.path.exists(filepath):
                 ToCManuscript._restoring = True
                 with open(filepath, 'rb') as file:
                     saved_obj = pickle.load(file)
-                    # Update attributes
+                    # Update attributes.
                     self.__dict__.update(saved_obj.__dict__)
-                    # Update the dictionary items
+                    # Update the dictionary items.
                     for key, value in saved_obj.items():
                         self[key] = value
                 ToCManuscript._restoring = False
@@ -383,14 +385,51 @@ class ToCManuscript(ToCDict):
                 self.schema = StorySchema()
                 # Save state.
                 self.pickle()
-                # After directory is ready
-                if nb_file_id:
-                    self.save_title_to_file(nb_file_id, self.safe_title)
+                self._save_noteable_title()
 
         else:
             print("Error: Could not initialize the manuscript. Title cannot be empty!")
 
+    def _save_noteable_title(self):
+        """
+        Save the title to a file if the Noteable notebook file ID is available in the environment variables.
+        
+        This is an internal method and should not be called directly.
+        """
+        nb_file_id = os.environ.get('NTBL_FILE_ID', None)
+        if nb_file_id:
+            self.save_title_to_file(nb_file_id, self.title)
+        
+    def set_title(self, title, subtitle=""):
+        """
+        Set the title and subtitle for the object.
+        
+        Parameters:
+            title (str): The title to set.
+            subtitle (str): The subtitle to set. Default is an empty string.
+        
+        Side Effects:
+            - Updates the object's title, subtitle, and safe_title attributes.
+            - Serializes the object using pickle.
+            - Calls the internal method to save the title if applicable.
+        """
+        if title != "":
+            self.title = title
+            self.subtitle = subtitle
+            self.safe_title = re.sub('[^a-zA-Z0-9 \n\.]', '', self.title).replace(" ", "_")
+            self.pickle()
+            self._save_noteable_title()
+
     def retrieve_title(self, nb_file_id):
+        """
+        Retrieve the title associated with a notebook file ID.
+        
+        Parameters:
+            nb_file_id (str): The notebook file ID.
+        
+        Returns:
+            str: The title if it exists, None otherwise.
+        """
         hash_object = hashlib.sha256(nb_file_id.encode())
         hash = hash_object.hexdigest()
         filepath = os.path.join(self.output_dir, f'{hash}.title')
@@ -399,12 +438,32 @@ class ToCManuscript(ToCDict):
                 return file.read()
 
     def save_title_to_file(self, nb_file_id, title):
+        """
+        Save the title associated with a notebook file ID.
+        
+        Parameters:
+            nb_file_id (str): The notebook file ID.
+            title (str): The title to save.
+        """
         hash_object = hashlib.sha256(nb_file_id.encode())
         hash = hash_object.hexdigest()
         filepath = os.path.join(self.output_dir, f'{hash}.title')
         with open(filepath, 'w') as file:
             file.write(title)
 
+    def set_section(self, indices, **kwargs):
+        """
+        Set a section in the nested dictionary using indices.
+        
+        Parameters:
+            indices (list): List of indices to navigate the nested dictionary.
+            kwargs (dict): Additional keyword arguments to set in the section.
+        """
+        d = self
+        for index in indices[:-1]:
+            d = d.setdefault(index, {})
+        d[indices[-1]] = ToCDict(kwargs)
+    
     def get_schema(self):
         """
         Retrieves the current schema instance for this Schema or its subclass.
@@ -427,27 +486,52 @@ class ToCManuscript(ToCDict):
         self.schema = schema
 
     def set_guidelines(self, guidelines):
+        """
+        Set guidelines and update the 'updated' timestamp.
+        
+        Parameters:
+            guidelines (dict): Dictionary containing the guidelines to set.
+        """
         self.guidelines = guidelines
         self['updated'] = datetime.now()
         self.pickle()
 
     def get_guidelines(self):
+        """
+        Get the current guidelines.
+        
+        Returns:
+            dict: Dictionary containing the current guidelines.
+        """
         return self.guidelines
 
     def set_constraints(self, constraints):
+        """
+        Set constraints and update the 'updated' timestamp.
+        
+        Parameters:
+            constraints (dict): Dictionary containing the constraints to set.
+        """
         self.constraints = constraints
         self['updated'] = datetime.now()
         self.pickle()
 
     def get_constraints(self):
+        """
+        Get the current constraints.
+        
+        Returns:
+            dict: Dictionary containing the current constraints.
+        """
         return self.constraints
 
     def __setitem__(self, key, value):
         """
         Sets the value for the specified key in the instance. If the value is of type 'ToCDict', the current state of the object is saved to a pickle file.
 
-        :param key: The key for which the value is to be set.
-        :param value: The value to be set for the specified key. If of type 'ToCDict', the object's state is saved.
+        Parameters:
+            key (str): The key for which the value is to be set.
+            value (mixed): The value to be set for the specified key. If of type 'ToCDict', the object's state is saved.
         """
 
         # Object's init process we want to have a native functionality.
@@ -584,8 +668,9 @@ class ToCManuscript(ToCDict):
         """
         Recursively constructs content from a nested dictionary into a string, using integer keys as section identifiers. This method formats content in a hierarchical structure, providing section numbers, titles, and other details as required.
 
-        :param content_dict: A dictionary containing the content to be constructed, organized hierarchically using integer keys.
-        :param level_str: A string representing the current numbering level in the hierarchy, e.g., "1.2.3.".
+        Parameters:
+            content_dict (dict): A dictionary containing the content to be constructed, organized hierarchically using integer keys.
+            level_str (str): A string representing the current numbering level in the hierarchy, e.g., "1.2.3.".
 
         Returns:
             str: The content string representing the hierarchical structure of the content_dict.
@@ -695,9 +780,10 @@ class ToCManuscript(ToCDict):
         """
         Recursively writes content from a nested dictionary into a given file, using integer keys as section identifiers. This method formats content in a hierarchical structure, providing section numbers, titles, and other details as required.
 
-        :param file: The file object to which the content will be written.
-        :param content_dict: A dictionary containing the content to be written, organized hierarchically using integer keys.
-        :param level_str: A string representing the current numbering level in the hierarchy, e.g., "1.2.3.".
+        Parameters:
+            file (File): The file object to which the content will be written.
+            content_dict (dict): A dictionary containing the content to be written, organized hierarchically using integer keys.
+            level_str (str): A string representing the current numbering level in the hierarchy, e.g., "1.2.3.".
 
         Example:
             Given a content_dict structured as:
@@ -758,12 +844,12 @@ class ToCManuscript(ToCDict):
         """
         Recursively find the index of the next available depth-first section in the TOC.
 
-        Args:
+        Parameters:
             index (list): The current index in the TOC.
             toc (dict): The TOC structure.
 
         Returns:
-            next_index (list): The index of the next available section or the first section if no next section is found.
+            list: The index of the next available section or the first section if no next section is found.
 
         Example Cases:
             - Starting from an empty index: Returns the index of the first key in the TOC.
@@ -799,8 +885,7 @@ class ToCManuscript(ToCDict):
                 if isinstance(key, int):
                     return index[:level] + [key]
 
-        # If no next section is found at any level, start from the beginning of the TOC
-        return self._find_next_index([], toc)
+        return []
 
     def get_prompt_by_index(self, index = []):
         return self.get_currently_editing_prompt(index)
@@ -832,9 +917,12 @@ class ToCManuscript(ToCDict):
         start_index = index if index else self.currently_editing_index
         for idx in start_index:
             nested_dict = nested_dict[idx]
+        title = nested_dict.get("title", "")
         prompt = nested_dict.get("prompt", "")
-        if prompt == "":
-            print("Item '%s' has no prompt for the content generation. Move on to the next section." % nested_dict.get("title", ""))
+        if title == "":
+            print("Section title not found. Have you reached the end of the table of contents?")
+        elif prompt == "" and title != "" and not index:
+            print(f"Section title '{title}' has no prompt for the content generation. Move on to the next section?")
         return prompt
 
     def get_currently_editing_content(self):
@@ -855,7 +943,8 @@ class ToCManuscript(ToCDict):
         """
         Sets the summary for the currently editing index.
 
-        :param content: The summary to be set.
+        Parameters:
+            content (str): The summary to be set.
         """
         self.set_summary(summary, self.currently_editing_index)
 
@@ -863,8 +952,9 @@ class ToCManuscript(ToCDict):
         """
         Sets the summary for the given editing index.
 
-        :param summary: The summary to be set.
-        :param editing_index: The index path to the location within the nested dictionary where the summary should be updated.
+        Parameters:
+            summary (str): The summary to be set.
+            editing_index (list): The index path to the location within the nested dictionary where the summary should be updated.
         """
         # Get the reference to the nested dictionary using the index_path
         nested_dict = self
@@ -887,8 +977,9 @@ class ToCManuscript(ToCDict):
         """
         Sets the content for the currently editing index.
 
-        :param content: The content to be set.
-        :param completed: A flag indicating whether the content editing is completed. Defaults to False.
+        Parameters:
+            content (str): The content to be set.
+            completed (bool): A flag indicating whether the content editing is completed. Defaults to False.
         """
         self.set_content(content, self.currently_editing_index, completed)
 
@@ -896,9 +987,10 @@ class ToCManuscript(ToCDict):
         """
         Sets the content for the given editing index.
 
-        :param content: The content to be set.
-        :param editing_index: The index path to the location within the nested dictionary where the content should be updated.
-        :param completed: A flag indicating whether the content editing is completed. Defaults to False.
+        Parameters:
+            content (str): The content to be set.
+            editing_index (list): The index path to the location within the nested dictionary where the content should be updated.
+            completed (bool): A flag indicating whether the content editing is completed. Defaults to False.
         """
         # Get the reference to the nested dictionary using the index_path
         nested_dict = self
@@ -923,8 +1015,6 @@ class ToCManuscript(ToCDict):
     def check_complete(self):
         """
         Checks the completion status of all sections in the manuscript. If all sections are marked as complete, the manuscript's global completion status is set to True. Otherwise, a notice is printed, and a list of all incomplete sections is provided.
-
-        :return: None
         """
         incomplete_sections = self._check_completion_status(self, [])
 
@@ -942,10 +1032,12 @@ class ToCManuscript(ToCDict):
         """
         Recursively checks the completion status of sections in the nested dictionary and returns a list of incomplete sections.
 
-        :param content_dict: A dictionary containing the content to be checked.
-        :param level_str_list: A list of strings representing the current numbering level in the hierarchy.
+        Parameters:
+            content_dict (dict): A dictionary containing the content to be checked.
+            level_str_list (list): A list of strings representing the current numbering level in the hierarchy.
 
-        :return: A list of dictionaries containing details about the incomplete sections.
+        Returns:
+            list: A list of dictionaries containing details about the incomplete sections.
         """
         incomplete_sections = []
         sorted_keys = sorted([k for k in content_dict.keys() if isinstance(k, int)])
@@ -989,7 +1081,7 @@ class ToCManuscript(ToCDict):
             """
             Recursively find the index of the next available depth-first section in the TOC.
 
-            Args:
+            Parameters:
                 index (list): The current index in the TOC.
                 toc (dict): The TOC structure.
 
@@ -1042,11 +1134,44 @@ class ToCManuscript(ToCDict):
         self.pickle()
         return next_index
 
+    def get_next_prompt_directives(self):
+        """
+        Get the directives for the next prompt based on the next index.
+        
+        Returns:
+            dict: A dictionary containing the following keys:
+                - A dictionary containing directives if available.
+                - An empty string if no directives are found.
+                - {"Instructions": "THE END"} if the next index is the first index, indicating the end.
+        """
+        # Find the next index using a separate method (not shown here)
+        next_index = self.find_next_index()
+        
+        # Check if the next index is the first index, indicating the end
+        if next_index == self.first_index:
+            return {"Instructions": "THE END"}
+        
+        # Retrieve the next prompt using the next index
+        next_prompt = self.get_prompt_by_index(next_index)
+        
+        # Check if the next prompt has a 'directives' attribute
+        if hasattr(next_prompt, 'directives'):
+            return next_prompt.directives
+        
+        # Check if the next prompt is a dictionary
+        elif isinstance(next_prompt, dict):
+            return next_prompt
+        
+        # Return an empty string if no directives are found
+        else:
+            return ""
+
     def move_to_next_section_and_get_prompts(self):
         """
         Moves to the next section in the manuscript and retrieves the prompts for the current and next sections.
 
         This method performs the following steps:
+
         1. Moves to the next section and updates the current editing index.
         2. Retrieves the prompt for the section currently being edited.
         3. Finds the index of the next section.
@@ -1063,21 +1188,25 @@ class ToCManuscript(ToCDict):
             print(result)
             Output might be:
             {
-                "current_index": 2,
+                "current_index": [2],
                 "current_prompt": <Prompt object>,
                 "next_prompt_directives": {"Instructions": "Describe the setting"}
             }
         """
         current_index = self.move_to_next_section()
         current_prompt = self.get_currently_editing_prompt()
-        next_index = self.find_next_index()
-        next_prompt_directives = self.get_prompt_by_index(next_index) if next_index != self.first_index else {"Instructions": "THE END"}
-        return {
+        
+        next_prompt_directives = self.get_next_prompt_directives() if current_prompt else ""
+        
+        result = {
             "current_index": current_index,
             "current_prompt": current_prompt,
-            # Remove next directive if current prompt is empty, because it will misguide LLM to generatae content rather than move to the next prompt.
-            "next_prompt_directives": next_prompt_directives.directives if current_prompt and hasattr(next_prompt_directives, 'directives') else next_prompt_directives if isinstance(next_prompt_directives, dict) else ""
         }
+        
+        if next_prompt_directives:
+            result['next_prompt_directives'] = next_prompt_directives
+        
+        return result
 
     def print_toc(self, output_summaries = True):
         """
@@ -1086,7 +1215,7 @@ class ToCManuscript(ToCDict):
         This method iteratively traverses the nested structure of the TOC, considering various keys and levels of nesting,
         and prints the titles of the sections and subsections with appropriate indentation.
 
-        Args:
+        Parameters:
             output_summaries (bool): Whether the TOC should contain summaries for each section. Default True.
 
         Example Output:
@@ -1103,7 +1232,7 @@ class ToCManuscript(ToCDict):
             """
             Recursive inner function to print the TOC at different levels.
 
-            Args:
+            Parameters:
                 toc (dict): The TOC structure at the current level.
                 level (int): The current level of indentation, allowing for a clear visual representation of the hierarchy.
 
@@ -1138,3 +1267,28 @@ class ToCManuscript(ToCDict):
 
         # Start the recursive printing from the root level
         _print_toc(self)
+
+    @classmethod
+    def configure(cls, **kwargs):
+        """
+        Class method to configure settings for ToCManuscript.
+        
+        Parameters:
+            kwargs (dict): Keyword arguments to set configurations. Currently supports 'output_directory'.
+        
+        Usage:
+            ToCManuscript.configure(output_directory='/path/to/dir')
+        """
+        # Check if 'output_directory' is provided in keyword arguments.
+        if 'output_directory' in kwargs:
+            # Set the class attribute _output_directory.
+            cls._output_directory = kwargs['output_directory']
+            
+            # Get the absolute path and print it.
+            abs_path = os.path.abspath(cls._output_directory)
+            print(f'Output directory set to: {abs_path}')
+        else:
+            print('No settings to configure.')
+
+# Initialize configuration function.
+configure = ToCManuscript.configure

@@ -28,16 +28,18 @@ class ToCDict(dict):
         """
         ToCDict __setitem__ overrides the default behavior for setting an item's value. Ensures that the value is a dictionary and contains specific keys like 'prompt' and 'title'. Also manages timestamps for 'created' and 'modified' and sets the 'completed' attribute.
 
-        :param key: The key for which the value needs to be set.
-        :param value: The value to be set. Must be a dictionary and contain specific keys and objects:
-            - 'prompt': (Optional) A Prompt object.
-            - 'title': The title associated with the key.
-            - 'modified': (Automatically set) The timestamp when the value was last modified.
-            - 'created': (Automatically set if not provided) The timestamp when the value was created.
-            - 'completed': (Automatically set to False if not provided) A flag indicating whether the task associated with the key is completed.
-                           If a prompt has not been given, then the title is printed without content, and completed is automatically True.
+        Parameters:
+            key (str): The key for which the value needs to be set.
+            value (dict): The value to be set. Must be a dictionary and contain specific keys and objects:
+                - 'prompt': (Optional) A Prompt object.
+                - 'title': The title associated with the key.
+                - 'modified': (Automatically set) The timestamp when the value was last modified.
+                - 'created': (Automatically set if not provided) The timestamp when the value was created.
+                - 'completed': (Automatically set to False if not provided) A flag indicating whether the task associated with the key is completed.
+                            If a prompt has not been given, then the title is printed without content, and completed is automatically True.
 
-        :raises ValueError: If the value is not a dictionary, if 'prompt' is not a Prompt object, or 'title' is not given.
+        :raises
+            ValueError: If the value is not a dictionary, if 'prompt' is not a Prompt object, or 'title' is not given.
         """
         if type(value) == ToCDict:
             if 'prompt' in value:

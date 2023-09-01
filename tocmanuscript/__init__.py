@@ -1,4 +1,4 @@
-from .core import ToCManuscript, ToCDict, Prompt, Author
+from .core import ToCManuscript, Prompt, Author, configure
 from .Schema import Schema
 from .StorySchema import StorySchema
 from .ResearchSchema import ResearchSchema

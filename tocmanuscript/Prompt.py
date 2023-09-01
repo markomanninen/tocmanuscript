@@ -58,7 +58,8 @@ class Prompt:
         """
         Initializes the Prompt class with directives, guidelines, and constraints.
 
-        :param directives: The core instruction that guides the model's response. Can include subcategories like:
+        Parameters:
+            directives (dict): The core instruction that guides the model's response. Can include subcategories like:
             - Question: Asking for specific information.
             - Statement: Providing information to elicit a response.
             - Instruction: Giving a command or request.
@@ -79,7 +80,7 @@ class Prompt:
                     ...
                 }
 
-        :param guidelines: Shapes the tone, structure, and context of the response. Can include subcategories like:
+            guidelines (dict): Shapes the tone, structure, and context of the response. Can include subcategories like:
             - Role: Defining a persona or scenario.
             - Style: Guiding the language or tone.
             - Format: Specifying the structure or layout.
@@ -96,7 +97,7 @@ class Prompt:
                     ...
                 }
 
-        :param constraints: Sets limitations or boundaries for the response. Can include subcategories like:
+            constraints (dict): Sets limitations or boundaries for the response. Can include subcategories like:
             - Length Constraints: Limiting the response to a specific length, such as word or character count.
             - Content Restrictions: Avoiding certain words, topics, or content.
             - Time Constraints: Requiring a response within a specific time frame or historical period.
