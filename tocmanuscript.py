@@ -219,7 +219,7 @@ Output:
 ```
 {
     'Keyword': {
-        'Section_Title': []
+        'Section_Title': ['list of strings']
     }
 }
 ```
@@ -452,7 +452,7 @@ class ToCManuscript(ToCDict):
                 self.schema = Schema(
                     {
                         'Keyword': {
-                            'Section_Title': []
+                            'Section_Title': ['list of strings']
                         }
                     }
                 )
