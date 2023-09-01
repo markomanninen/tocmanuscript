@@ -90,16 +90,16 @@ class Schema(SchemaValidator):
         data (dict): A dictionary that holds the actual data for the schema elements.
 
     Dynamically Generated Methods:
-        add_{subschema}(key, item_dict): Adds an item to the specified subschema.
-        get_{subschema}(key): Retrieves an item from the specified subschema by its key.
-        get_{subschema}s(): Retrieves all items from the specified subschema.
-        remove_{subschema}(key): Removes an item from the specified subschema by its key.
+        add_{subschema}(key, item_dict): Adds a data item to the specified subschema.
+        get_{subschema}(key): Retrieves a data item from the specified subschema by its key.
+        get_{subschema}s(): Retrieves all data items from the specified subschema.
+        remove_{subschema}(key): Removes a data item from the specified subschema by its key.
         get_{subschema}_schema(): Retrieves the schema for the specified subschema.
 
     Methods:
-        _add_to_subschema(subschema_key, item_key, item_dict): Internal method to add an item to a subschema.
-        _get_from_subschema(subschema_key, item_key=None): Internal method to get items from a subschema.
-        _remove_from_subschema(subschema_key, item_key): Internal method to remove items from a subschema.
+        _add_to_subschema(subschema_key, item_key=None, item_dict=None, index=None): Internal method to add an item to a subschema.
+        _get_from_subschema(subschema_key, item_key=None, index=None): Internal method to get items from a subschema.
+        _remove_from_subschema(subschema_key, item_key, index=None): Internal method to remove items from a subschema.
         get_schema(subschema_key=None): Retrieves the original schema structure or a specific subschema.
 
     Usage:
@@ -176,6 +176,7 @@ class Schema(SchemaValidator):
             add_{subschema}(key, item_dict): Adds an item to the specified subschema.
             get_{subschema}(key): Retrieves an item from the specified subschema by its key.
             get_{subschema}s(): Retrieves all items from the specified subschema.
+            get_{subschema}_schema(): Retrieves the specified subschema.
             remove_{subschema}(key): Removes an item from the specified subschema by its key.
 
         Raises:

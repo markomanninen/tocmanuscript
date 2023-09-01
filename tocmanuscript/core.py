@@ -10,13 +10,13 @@ Unlock the power of structured content creation with the ToCManuscript module in
 With ToCManuscript, you can:
 
 - **Define a Hierarchical TOC**: Outline your manuscript with headings, subheadings, and descriptions in a nested tree format.
-- **Set Prompts and Guidelines**: Customize the content generation process with specific prompts, guidelines, and constraints for each section.
-- **Generate Content Iteratively**: Let ChatGPT create content for each section, one by one, guided by the prompts you've set.
+- **Set Prompts and Guidelines**: Customize the content generation process with specific prompts directives, guidelines, and constraints for each section.
+- **Generate Content Iteratively**: Let ChatGPT create content for each section, one by one, guided by the prompts you have set.
 - **Manage Content Progress**: Track the completion status, edit drafts, and navigate through the TOC.
 - **Export to Markdown**: Save the completed manuscript to a markdown file, ready for further editing or publishing.
 - **Recover**: The state of the manuscript is stored each time you make chances to it. You can restore the manuscript by initializing the main class with the correct title.
 
-Whether you're working on a research paper, a novel, a technical manual, or any other long-form content, ToCManuscript streamlines the process, making it more creative and experimental.
+Whether you are working on a research paper, a novel, a technical manual, or any other long-form content, ToCManuscript streamlines the process, making it more creative and experimental.
 
 Copy and paste the following wizard prompt to the ChatGPT's text input with Noteable plugin activated.
 
@@ -208,26 +208,31 @@ toc_manuscript.set_currently_editing_summary('...')
 
 ### STEP 5g
 
-If applicable, fill in the story schema by substituting example data in subsequent method calls:
+If applicable, populate the manuscript schema data. To know, what meta data is collected by each section, first print out the schema:
 
 ```
-# Add a character(s)
-toc_manuscript.schema.add_character("Alice", {'Role': 'Protagonist', 'Traits': ['Curious', 'Brave'], 'Arc': 'Growth', 'History': 'Orphan', 'Persona': 'Adventurous'})
-
-# Add a scene(s)
-toc_manuscript.schema.add_scene("Chapter 1", [{'Section Title': 'Introduction', 'Setting': 'Forest', 'Characters': ['Alice'], 'Key Elements': ['Mysterious Door']}])
-
-# Add a place(s) or location(s)
-toc_manuscript.schema.add_place_or_location("Chapter 1", [{'Place': 'Forest Clearing', 'Description': 'A clearing filled with flowers', 'Significance': 'First major setting'}])
-
-# Add to the timeline(s). Year, month and day can be any main epoch, sub-epoch and sub-sub-epochs. Sub episodes are for the flashbacks, or other parallel shifts in a timetine.
-toc_manuscript.schema.add_timeline("2023", {'August': {'29': [{'Event': 'Alice finds a door', 'Type': 'Normal', 'Sub_Episodes': [{'Episode': 'Door opens', 'Type': 'Normal'}]}]}})
-
-# Add an object(s) or symbol(s)
-toc_manuscript.schema.add_object_or_symbol("Chapter 1", [{'Object': 'Mysterious Door', 'Description': 'An intricately carved door standing alone', 'Significance': 'Gateway to another world', 'Material': 'Wood', 'Age': 'Ancient'}])
+print(toc_manuscript.schema.get_schema())
 ```
 
-Multiple method calls can be executed within the current section if its sub schema contains multiple items.
+Output:
+
+```
+{
+    'Keyword': {
+        'Section_Title': []
+    }
+}
+```
+
+Then add items according to each subschemas:
+
+```
+# Add keywords
+for keyword in ["Keyword 1", "Keyword 2"]:
+    toc_manuscript.schema.add_keyword("Section Title", keyword)
+```
+
+Multiple method calls can be executed within the current section if its subschemas contains multiple items.
 
 ### STEP 5h
 
@@ -262,7 +267,7 @@ Initiate the procedure with the first step!
 from .Author import Author
 from .Prompt import Prompt
 from .ToCDict import ToCDict
-from .StorySchema import StorySchema
+from .Schema import Schema
 from datetime import datetime
 import hashlib
 import pickle
@@ -291,9 +296,9 @@ class ToCManuscript(ToCDict):
         print(toc_manuscript.move_to_next_section_and_get_prompts())
 
         # 3. Generate content
-        # c) Placeholder for LLM text-generated content
+        # a) Set variable for LLM text-generated content:
         content = "..."
-        # d) Set content with completed=True|False
+        # b) Set content with completed=True|False:
         toc_manuscript.set_currently_editing_content(content, completed=True)
 
         # Once all sections are generated with steps 2-3:
@@ -382,7 +387,13 @@ class ToCManuscript(ToCDict):
                 self.directives = {}
                 self.guidelines = {}
                 self.constraints = {}
-                self.schema = StorySchema()
+                self.schema = Schema(
+                    {
+                        'Keyword': {
+                            'Section_Title': []
+                        }
+                    }
+                )
                 # Save state.
                 self.pickle()
                 self._save_noteable_title()
