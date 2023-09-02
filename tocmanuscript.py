@@ -83,7 +83,7 @@ b) Establish general rules for LLM/GPT (Large Language Model/Generative Pre-trai
 
 ```
 guidelines = {'Role': 'Author', 'Style': 'Formal', 'Format': 'Essay', 'Context': 'Academic Research'}
-constraints = {'Content': 'Start with the main heading/title; Conclude with a summary at the end; Exclude slang or colloquial language; Refrain from covering topics from future chapters and sections; Avoid fragmented structures with excessive subtitles'}
+constraints = {'Content': 'Omit the inclusion of a main heading or title at the outset and a concluding summary at the end; Avoid discussing topics reserved for future sections and steer clear of creating a fragmented structure with excessive subtitles.'}
 ```
 
 Apply these as the global system prompt for LLM:
@@ -188,7 +188,7 @@ Scrutinize the generated text, evaluating its literary elements and techniques. 
 
 ### STEP 5d
 
-Incorporate the identified improvements and produce a revised version of the content, still observing token or length limits.
+Incorporate the identified improvements and produce a revised version of the content. Do not write about the future section topics. Split text to multiple parts, if required to incorporate all information.
 
 ### STEP 5e
 
@@ -224,7 +224,7 @@ Output:
 }
 ```
 
-Then add items according to each subschemas:
+Let the user review, if the schema is right. Then add items according to each subschemas:
 
 ```
 # Add keywords
