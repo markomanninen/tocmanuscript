@@ -93,11 +93,9 @@ Heading 1
 Either request the TOC from the user or assist in crafting one.
 
 
-## STEP 3 (a-b)
+## STEP 3
 
-a) Consult the documentation of the `Prompt` class for guidance on this step: `docs(Prompt)`
-
-b) Establish general rules for LLM/GPT (Large Language Model/Generative Pre-trained Transformer) prompts. For example:
+Establish general rules for LLM/GPT (Large Language Model/Generative Pre-trained Transformer) prompts. For example:
 
 ```
 guidelines = {'Role': 'Author', 'Style': 'Formal', 'Format': 'Essay', 'Context': 'Academic Research'}

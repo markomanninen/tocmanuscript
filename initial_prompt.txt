@@ -88,11 +88,9 @@ Heading 1
 Either request the TOC from the user or assist in crafting one.
 
 
-## STEP 3 (a-b)
+## STEP 3
 
-a) Consult the documentation of the Prompt class for guidance on this step: docs(Prompt)
-
-b) Establish general rules for LLM/GPT (Large Language Model/Generative Pre-trained Transformer) prompts. For example:
+Establish general rules for LLM/GPT (Large Language Model/Generative Pre-trained Transformer) prompts. For example:
 
 guidelines = {'Role': 'Author', 'Style': 'Formal', 'Format': 'Essay', 'Context': 'Academic Research'}
 constraints = {'Content': 'Omit the inclusion of a main heading or title at the outset and a concluding summary at the end; Avoid discussing topics reserved for future sections and steer clear of creating a fragmented structure with excessive subtitles.'}
